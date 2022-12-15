@@ -8,6 +8,7 @@ public abstract class Expression {
         R visitGroupingExpression(Grouping expression);
         R visitLiteralExpression(Literal expression);
         R visitUnaryExpression(Unary expression);
+        R visitTernaryExpression(Ternary expression);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -60,6 +61,25 @@ public abstract class Expression {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnaryExpression(this);
+        }
+    }
+    static class Ternary extends Expression {
+        final Expression left;
+        final  Token question;
+        final  Expression middle;
+        final  Token colon;
+        final  Expression right;
+        public Ternary(Expression left, Token question, Expression middle, Token colon, Expression right) {
+            this.left = left;
+            this.question = question;
+            this.middle = middle;
+            this.colon = colon;
+            this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitTernaryExpression(this);
         }
     }
 }

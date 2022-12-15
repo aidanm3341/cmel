@@ -27,6 +27,11 @@ public class AstPrinter implements Expression.Visitor<String> {
         return parenthesize(expression.operator.getLexeme(), expression.right);
     }
 
+    @Override
+    public String visitTernaryExpression(Expression.Ternary expression) {
+        return parenthesize("ternary", expression.left, expression.middle, expression.right);
+    }
+
     private String parenthesize(String name, Expression... expressions) {
         StringBuilder builder = new StringBuilder();
         builder.append('(').append(name);
