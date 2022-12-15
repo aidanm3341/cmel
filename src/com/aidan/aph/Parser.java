@@ -97,7 +97,7 @@ public class Parser {
     private Expression unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
-            Expression right = primary();
+            Expression right = unary();
             return new Expression.Unary(operator, right);
         }
 
