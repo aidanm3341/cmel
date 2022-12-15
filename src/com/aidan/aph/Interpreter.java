@@ -69,7 +69,7 @@ public class Interpreter implements Expression.Visitor<Object> {
                 if (left instanceof String && right instanceof String)
                     return (String)left + (String)right;
 
-                throw new RuntimeError(expression.operator, "Operands must be numbers of strings.");
+                throw new RuntimeError(expression.operator, "Operands must be numbers or strings.");
             }
         }
         return null;
