@@ -2,7 +2,7 @@ package com.aidan.aph;
 
 public class AstPrinter implements Expression.Visitor<String> {
 
-    private String print(Expression expression) {
+    public String print(Expression expression) {
         return expression.accept(this);
     }
 

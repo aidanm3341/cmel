@@ -4,6 +4,7 @@ public enum TokenType {
     // single char tokens
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     COMMA, DOT, PLUS, MINUS, SEMICOLON, SLASH, STAR,
+    QUESTION, COLON,
 
     // one or two chars
     BANG, BANG_EQUAL,
