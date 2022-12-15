@@ -12,8 +12,10 @@ import static com.aidan.aph.TokenType.EOF;
 import static java.lang.Thread.sleep;
 
 public class Aph {
-
     private static boolean hadError;
+    private static boolean hadRuntimeError;
+
+    private static Interpreter interpreter = new Interpreter();
 
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length > 1) {
@@ -31,6 +33,7 @@ public class Aph {
         run(new String(bytes, Charset.defaultCharset()));
 
         if (hadError) System.exit(65);
+        if (hadRuntimeError) System.exit(70);
     }
 
     private static void runPrompt() throws IOException, InterruptedException {
@@ -56,7 +59,7 @@ public class Aph {
 
         if (hadError) return;
 
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     public static void error(int line, String message) {
@@ -73,5 +76,10 @@ public class Aph {
     private static void report(int line, String where, String message) {
         System.err.println("[line " + line + "] Error" + where + ": " + message);
         hadError = true;
+    }
+
+    public static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() + "\n[line " + error.getToken().getLine() + "]");
+        hadRuntimeError = true;
     }
 }

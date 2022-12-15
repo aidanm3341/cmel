@@ -18,7 +18,7 @@ public class GenerateAst {
                 "Grouping : Expression expression",
                 "Literal : Object value",
                 "Unary : Token operator, Expression right",
-                "Ternary : Expression left, Token question, Expression middle, Token colon, Expression right"
+                "Ternary : Expression test, Token question, Expression left, Token colon, Expression right"
         ));
     }
 

@@ -29,7 +29,7 @@ public class AstPrinter implements Expression.Visitor<String> {
 
     @Override
     public String visitTernaryExpression(Expression.Ternary expression) {
-        return parenthesize("ternary", expression.left, expression.middle, expression.right);
+        return parenthesize("ternary", expression.left, expression.left, expression.right);
     }
 
     private String parenthesize(String name, Expression... expressions) {

@@ -31,13 +31,13 @@ public class Parser {
 
         if (match(QUESTION)) {
             Token questionToken = previous();
-            Expression middle = equality();
+            Expression left = equality();
 
             if (check(COLON)) {
                 consume(COLON, "Expected ':'");
                 Token colonToken = previous();
                 Expression right = equality();
-                expression = new Expression.Ternary(expression, questionToken, middle, colonToken, right);
+                expression = new Expression.Ternary(expression, questionToken, left, colonToken, right);
             } else {
                 throw error(questionToken, "Expected ':'");
             }
@@ -168,7 +168,7 @@ public class Parser {
     }
 
     private boolean isAtEnd() {
-        return current >= tokens.size() || peek().getType() == EOF;
+        return peek().getType() == EOF;
     }
 
     private Token peek() {

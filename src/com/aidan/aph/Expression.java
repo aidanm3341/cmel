@@ -64,15 +64,15 @@ public abstract class Expression {
         }
     }
     static class Ternary extends Expression {
-        final Expression left;
+        final Expression test;
         final  Token question;
-        final  Expression middle;
+        final  Expression left;
         final  Token colon;
         final  Expression right;
-        public Ternary(Expression left, Token question, Expression middle, Token colon, Expression right) {
-            this.left = left;
+        public Ternary(Expression test, Token question, Expression left, Token colon, Expression right) {
+            this.test = test;
             this.question = question;
-            this.middle = middle;
+            this.left = left;
             this.colon = colon;
             this.right = right;
         }
