@@ -184,6 +184,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public Void visitWhileStatement(Statement.While statement) {
+        while (isTruthy(evaluate(statement.condition))) {
+            execute(statement.body);
+        }
+        return null;
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");

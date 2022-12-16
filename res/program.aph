@@ -1,9 +1,6 @@
-var x = 2;
+var x = 0;
 
-if (x == 1) {
-    print "one";
-    print "first block";
-} else {
-    print "two";
-    print "second block";
+while (x < 100) {
+    print x;
+    x = x + 1;
 }

@@ -9,6 +9,7 @@ public abstract class Statement {
         R visitIfStatementStatement(IfStatement statement);
         R visitPrintStatement(Print statement);
         R visitVarStatement(Var statement);
+        R visitWhileStatement(While statement);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -72,6 +73,19 @@ public abstract class Statement {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitVarStatement(this);
+        }
+    }
+    static class While extends Statement {
+        final Expression condition;
+        final  Statement body;
+        public While(Expression condition, Statement body) {
+            this.condition = condition;
+            this.body = body;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitWhileStatement(this);
         }
     }
 }
