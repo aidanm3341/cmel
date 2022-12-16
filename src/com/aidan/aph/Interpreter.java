@@ -31,7 +31,7 @@ public class Interpreter implements Expression.Visitor<Object> {
         Object right = evaluate(expression.right);
 
         switch (expression.operator.getType()) {
-            case GREATER       -> {
+            case GREATER -> {
                 checkNumberOperands(expression.operator, left, right);
                 return (double)left > (double)right;
             }
@@ -39,11 +39,11 @@ public class Interpreter implements Expression.Visitor<Object> {
                 checkNumberOperands(expression.operator, left, right);
                 return (double)left >= (double)right;
             }
-            case LESS          -> {
+            case LESS -> {
                 checkNumberOperands(expression.operator, left, right);
                 return (double)left < (double)right;
             }
-            case LESS_EQUAL    -> {
+            case LESS_EQUAL -> {
                 checkNumberOperands(expression.operator, left, right);
                 return (double)left <= (double)right;
             }
@@ -57,17 +57,23 @@ public class Interpreter implements Expression.Visitor<Object> {
             }
             case SLASH -> {
                 checkNumberOperands(expression.operator, left, right);
+                if ((double) right == 0)
+                    throw new RuntimeError(expression.operator, "Cannot divide by zero.");
                 return (double)left / (double)right;
             }
             case STAR  -> {
                 checkNumberOperands(expression.operator, left, right);
                 return (double)left * (double)right;
             }
-            case PLUS  -> {
-                if (left instanceof Double && right instanceof Double)
-                    return (double)left + (double)right;
-                if (left instanceof String && right instanceof String)
-                    return (String)left + (String)right;
+            case PLUS -> {
+                if (left instanceof Double l && right instanceof Double r)
+                    return l + r;
+                if (left instanceof String l && right instanceof String r)
+                    return l + r;
+                if (left instanceof String l && right instanceof Double r)
+                    return l + stringify(r);
+                if (left instanceof Double l && right instanceof String r)
+                    return stringify(l) + r;
 
                 throw new RuntimeError(expression.operator, "Operands must be numbers or strings.");
             }
