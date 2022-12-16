@@ -79,7 +79,7 @@ public class Aph {
     }
 
     public static void runtimeError(RuntimeError error) {
-        System.err.println(error.getMessage() + "\n[line " + error.getToken().getLine() + "]");
+        System.err.println("[line " + error.getToken().getLine() + "] " + error.getMessage());
         hadRuntimeError = true;
     }
 }
