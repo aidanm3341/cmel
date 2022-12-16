@@ -6,6 +6,7 @@ public abstract class Expression {
     interface Visitor<R> {
         R visitAssignExpression(Assign expression);
         R visitBinaryExpression(Binary expression);
+        R visitLogicalExpression(Logical expression);
         R visitGroupingExpression(Grouping expression);
         R visitLiteralExpression(Literal expression);
         R visitUnaryExpression(Unary expression);
@@ -41,6 +42,21 @@ public abstract class Expression {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpression(this);
+        }
+    }
+    static class Logical extends Expression {
+        final Expression left;
+        final  Token operator;
+        final  Expression right;
+        public Logical(Expression left, Token operator, Expression right) {
+            this.left = left;
+            this.operator = operator;
+            this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLogicalExpression(this);
         }
     }
     static class Grouping extends Expression {

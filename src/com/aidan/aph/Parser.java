@@ -111,20 +111,44 @@ public class Parser {
     }
 
     private Expression ternary() {
-        Expression expression = equality();
+        Expression expression = or();
 
         if (match(QUESTION)) {
             Token questionToken = previous();
-            Expression left = equality();
+            Expression left = or();
 
             if (check(COLON)) {
                 consume(COLON, "Expected ':'");
                 Token colonToken = previous();
-                Expression right = equality();
+                Expression right = or();
                 expression = new Expression.Ternary(expression, questionToken, left, colonToken, right);
             } else {
                 throw error(questionToken, "Expected ':'");
             }
+        }
+
+        return expression;
+    }
+
+    private Expression or() {
+        Expression expression = and();
+
+        while (match(OR)) {
+            Token operator = previous();
+            Expression right = and();
+            expression = new Expression.Logical(expression, operator, right);
+        }
+
+        return expression;
+    }
+
+    private Expression and() {
+        Expression expression = equality();
+
+        while (match(AND)) {
+            Token operator = previous();
+            Expression right = equality();
+            expression = new Expression.Logical(expression, operator, right);
         }
 
         return expression;

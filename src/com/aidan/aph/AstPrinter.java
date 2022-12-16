@@ -17,6 +17,11 @@ public class AstPrinter implements Expression.Visitor<String> {
     }
 
     @Override
+    public String visitLogicalExpression(Expression.Logical expression) {
+        return parenthesize(expression.operator.getLexeme(), expression.left, expression.right);
+    }
+
+    @Override
     public String visitGroupingExpression(Expression.Grouping expression) {
         return parenthesize("group", expression.expression);
     }

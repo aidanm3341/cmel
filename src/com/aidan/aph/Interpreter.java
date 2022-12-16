@@ -94,6 +94,19 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Object visitLogicalExpression(Expression.Logical expression) {
+        Object left = evaluate(expression.left);
+
+        if (expression.operator.getType() == TokenType.OR) {
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+
+        return evaluate(expression.right);
+    }
+
+    @Override
     public Object visitGroupingExpression(Expression.Grouping expression) {
         return evaluate(expression.expression);
     }

@@ -1,7 +1,9 @@
-var a = "hello!";
-{
-    var a = 123;
-    print a;
-}
+var x = 2;
 
-print a;
+if (x == 1) {
+    print "one";
+    print "first block";
+} else {
+    print "two";
+    print "second block";
+}
