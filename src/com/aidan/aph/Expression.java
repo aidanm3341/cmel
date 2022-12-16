@@ -9,6 +9,7 @@ public abstract class Expression {
         R visitLiteralExpression(Literal expression);
         R visitUnaryExpression(Unary expression);
         R visitTernaryExpression(Ternary expression);
+        R visitVariableExpression(Variable expression);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -80,6 +81,17 @@ public abstract class Expression {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitTernaryExpression(this);
+        }
+    }
+    static class Variable extends Expression {
+        final Token name;
+        public Variable(Token name) {
+            this.name = name;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVariableExpression(this);
         }
     }
 }

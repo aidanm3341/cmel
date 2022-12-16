@@ -1,7 +1,9 @@
-program       ::= statement* EOF ;
+program       ::= declaration* EOF ;
+declaration   ::= varDeclaration | statement ;
 statement     ::= exprStatement | printStatement ;
 exprStatement ::= expression ";" ;
 printStatement ::= "print" expression ";" ;
+varDeclaration ::= "var" IDENTIFIER ( "=" expression )? ";" ;
 
 expression ::= ternary ;
 ternary    ::= equality "?" equality ":" equality ;
@@ -12,4 +14,4 @@ factor     ::= unary ( ( "/" | "*" ) unary )* ;
 unary      ::= ( "!" | "-" ) unary
              | primary ;
 primary    ::= NUMBER | STRING | "true" | "false" | "nil"
-             | "(" expression ")" ;
+             | "(" expression ")" | IDENTIFIER ;

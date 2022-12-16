@@ -32,6 +32,11 @@ public class AstPrinter implements Expression.Visitor<String> {
         return parenthesize("ternary", expression.left, expression.left, expression.right);
     }
 
+    @Override
+    public String visitVariableExpression(Expression.Variable expression) {
+        return parenthesize("var", expression);
+    }
+
     private String parenthesize(String name, Expression... expressions) {
         StringBuilder builder = new StringBuilder();
         builder.append('(').append(name);
