@@ -4,6 +4,7 @@ import java.util.List;
 
 public abstract class Statement {
     interface Visitor<R> {
+        R visitBlockStatement(Block statement);
         R visitExpressionStatementStatement(ExpressionStatement statement);
         R visitPrintStatement(Print statement);
         R visitVarStatement(Var statement);
@@ -11,6 +12,17 @@ public abstract class Statement {
 
     abstract <R> R accept(Visitor<R> visitor);
 
+    static class Block extends Statement {
+        final List<Statement> statements;
+        public Block(List<Statement> statements) {
+            this.statements = statements;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBlockStatement(this);
+        }
+    }
     static class ExpressionStatement extends Statement {
         final Expression expression;
         public ExpressionStatement(Expression expression) {

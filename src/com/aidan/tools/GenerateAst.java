@@ -24,6 +24,7 @@ public class GenerateAst {
         ));
 
         defineAst(outputDir, "Statement", List.of(
+                "Block : List<Statement> statements",
                 "ExpressionStatement : Expression expression",
                 "Print : Expression expression",
                 "Var : Token name, Expression initializer"

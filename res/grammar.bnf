@@ -1,7 +1,8 @@
 // statements
 program       ::= declaration* EOF ;
 declaration   ::= varDeclaration | statement ;
-statement     ::= exprStatement | printStatement ;
+statement     ::= exprStatement | printStatement | block ;
+block         ::= "{" declaration* "}" ;
 exprStatement ::= expression ";" ;
 printStatement ::= "print" expression ";" ;
 varDeclaration ::= "var" IDENTIFIER ( "=" expression )? ";" ;

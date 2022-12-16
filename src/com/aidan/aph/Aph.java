@@ -46,6 +46,10 @@ public class Aph {
             String line = reader.readLine();
             if (line.equals("")) continue;
             if (line.equals(".quit")) return;
+
+            if (!line.endsWith(";"))
+                line = line + ";";
+
             run(line);
             hadError = false;
         }
