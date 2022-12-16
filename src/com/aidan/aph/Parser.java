@@ -45,12 +45,53 @@ public class Parser {
     }
 
     private Statement statement() {
+        if (match(FOR)) return forStatement();
         if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
         if (match(WHILE)) return whileStatement();
         if (match(LEFT_BRACE)) return new Statement.Block(block());
 
         return expressionStatement();
+    }
+
+    private Statement forStatement() {
+        consume(LEFT_PAREN, "Expect '(' after for.");
+
+        Statement initializer;
+        if (match(SEMICOLON))
+            initializer = null;
+        else if (match(VAR))
+            initializer = varDeclaration();
+        else
+            initializer = expressionStatement();
+
+        Expression condition = null;
+        if (!check(SEMICOLON))
+            condition = expression();
+        consume(SEMICOLON, "Expected ';' after loop condition.");
+
+        Expression increment = null;
+        if (!check(RIGHT_PAREN))
+            increment = expression();
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        Statement body = statement();
+
+        if (increment != null) {
+            body = new Statement.Block(List.of(
+                    body,
+                    new Statement.ExpressionStatement(increment)
+            ));
+        }
+
+        if (condition == null) condition = new Expression.Literal(true);
+        body = new Statement.While(condition, body);
+
+        if (initializer != null) body = new Statement.Block(List.of(
+                initializer,
+                body
+        ));
+        return body;
     }
 
     private Statement ifStatement() {
