@@ -1,3 +1,4 @@
+// statements
 program       ::= declaration* EOF ;
 declaration   ::= varDeclaration | statement ;
 statement     ::= exprStatement | printStatement ;
@@ -5,7 +6,9 @@ exprStatement ::= expression ";" ;
 printStatement ::= "print" expression ";" ;
 varDeclaration ::= "var" IDENTIFIER ( "=" expression )? ";" ;
 
-expression ::= ternary ;
+// expressions
+expression ::= assignment ;
+assignment ::= IDENTIFIER "=" assignment | ternary
 ternary    ::= equality "?" equality ":" equality ;
 equality   ::= comparison ( ( "!=" | "==" ) comparison )* ;
 comparison ::= term ( ( ">" | ">=" | "<" | "<=" ) term )* ;

@@ -63,7 +63,25 @@ public class Parser {
     }
 
     private Expression expression() {
-        return ternary();
+        return assignment();
+    }
+
+    private Expression assignment() {
+        Expression expression = ternary();
+
+        if (match(EQUAL)) {
+            Token equals = previous();
+            Expression value = assignment();
+
+            if (expression instanceof Expression.Variable expr) {
+                Token name = expr.name;
+                return new Expression.Assign(name, value);
+            }
+
+            error(equals, "Invalid assignment target.");
+        }
+
+        return expression;
     }
 
     private Expression ternary() {

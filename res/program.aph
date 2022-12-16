@@ -1,3 +1,7 @@
-var a = 1 / 2;
-var b = 20;
-print ((a + b) + 0.5) * 3;
+var a;
+var b = a ? "option 1" : "option 2";
+b = 10;
+a = "The answer is... ";
+a = 2;
+
+print a + b;

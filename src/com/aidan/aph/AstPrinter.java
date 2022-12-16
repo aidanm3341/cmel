@@ -7,6 +7,11 @@ public class AstPrinter implements Expression.Visitor<String> {
     }
 
     @Override
+    public String visitAssignExpression(Expression.Assign expression) {
+        return parenthesize("assign", expression);
+    }
+
+    @Override
     public String visitBinaryExpression(Expression.Binary expression) {
         return parenthesize(expression.operator.getLexeme(), expression.left, expression.right);
     }

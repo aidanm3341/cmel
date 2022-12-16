@@ -31,6 +31,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
 
     @Override
+    public Object visitAssignExpression(Expression.Assign expression) {
+        Object value = evaluate(expression.value);
+        environment.assign(expression.name, value);
+        return value;
+    }
+
+    @Override
     public Object visitBinaryExpression(Expression.Binary expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
