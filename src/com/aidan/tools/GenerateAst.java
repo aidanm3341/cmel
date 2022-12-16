@@ -20,6 +20,11 @@ public class GenerateAst {
                 "Unary : Token operator, Expression right",
                 "Ternary : Expression test, Token question, Expression left, Token colon, Expression right"
         ));
+
+        defineAst(outputDir, "Statement", List.of(
+                "ExpressionStatement : Expression expression",
+                "Print : Expression expression"
+        ));
     }
 
     private static void defineAst(String outputDir, String baseName, List<String>types) throws IOException {

@@ -1,5 +1,6 @@
 package com.aidan.aph;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.aidan.aph.TokenType.*;
@@ -14,12 +15,31 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public Expression parse() {
-        try {
-            return expression();
-        } catch(ParseError err) {
-            return null;
+    public List<Statement> parse() {
+        List<Statement> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+
+        return statements;
+    }
+
+    private Statement statement() {
+        if (match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
+    private Statement printStatement() {
+        Expression value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Statement.Print(value);
+    }
+
+    private Statement expressionStatement() {
+        Expression expression = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Statement.ExpressionStatement(expression);
     }
 
     private Expression expression() {

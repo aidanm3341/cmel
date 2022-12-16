@@ -1,3 +1,8 @@
+program       ::= statement* EOF ;
+statement     ::= exprStatement | printStatement ;
+exprStatement ::= expression ";" ;
+printStatement ::= "print" expression ";" ;
+
 expression ::= ternary ;
 ternary    ::= equality "?" equality ":" equality ;
 equality   ::= comparison ( ( "!=" | "==" ) comparison )* ;

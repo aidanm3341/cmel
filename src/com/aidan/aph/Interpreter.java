@@ -1,11 +1,14 @@
 package com.aidan.aph;
 
-public class Interpreter implements Expression.Visitor<Object> {
+import java.util.List;
 
-    public void interpret(Expression expression) {
+public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
+
+    public void interpret(List<Statement> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Statement statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Aph.runtimeError(error);
         }
@@ -116,6 +119,19 @@ public class Interpreter implements Expression.Visitor<Object> {
         return isTruthy(test) ? left : right;
     }
 
+    @Override
+    public Void visitExpressionStatementStatement(Statement.ExpressionStatement statement) {
+        evaluate(statement.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStatement(Statement.Print statement) {
+        Object value = evaluate(statement.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
@@ -141,5 +157,9 @@ public class Interpreter implements Expression.Visitor<Object> {
 
     private Object evaluate(Expression expression) {
         return expression.accept(this);
+    }
+
+    private void execute(Statement statement) {
+        statement.accept(this);
     }
 }
