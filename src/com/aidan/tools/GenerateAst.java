@@ -31,7 +31,8 @@ public class GenerateAst {
                 "IfStatement : Expression condition, Statement thenBranch, Statement elseBranch",
                 "Print : Expression expression",
                 "Var : Token name, Expression initializer",
-                "While : Expression condition, Statement body"
+                "While : Expression condition, Statement body",
+                "Function : Token name, List<Token> parameters, List<Statement> body"
         ));
     }
 

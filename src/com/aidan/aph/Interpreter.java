@@ -218,6 +218,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public Void visitFunctionStatement(Statement.Function statement) {
+        AphFunction function = new AphFunction(statement);
+        environment.define(statement.name.getLexeme(), function);
+        return null;
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
@@ -249,7 +256,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         statement.accept(this);
     }
 
-    private void executeBlock(List<Statement> statements, Environment environment) {
+    public void executeBlock(List<Statement> statements, Environment environment) {
         Environment previous = this.environment;
         try {
             this.environment = environment;
@@ -258,5 +265,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         } finally {
             this.environment = previous;
         }
+    }
+
+    public Environment getGlobals() {
+        return globals;
     }
 }

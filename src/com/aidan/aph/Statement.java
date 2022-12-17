@@ -10,6 +10,7 @@ public abstract class Statement {
         R visitPrintStatement(Print statement);
         R visitVarStatement(Var statement);
         R visitWhileStatement(While statement);
+        R visitFunctionStatement(Function statement);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -86,6 +87,21 @@ public abstract class Statement {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitWhileStatement(this);
+        }
+    }
+    static class Function extends Statement {
+        final Token name;
+        final  List<Token> parameters;
+        final  List<Statement> body;
+        public Function(Token name, List<Token> parameters, List<Statement> body) {
+            this.name = name;
+            this.parameters = parameters;
+            this.body = body;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitFunctionStatement(this);
         }
     }
 }

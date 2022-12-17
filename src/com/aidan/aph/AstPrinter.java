@@ -38,6 +38,11 @@ public class AstPrinter implements Expression.Visitor<String> {
     }
 
     @Override
+    public String visitCallExpression(Expression.Call expression) {
+        return parenthesize("call", expression);
+    }
+
+    @Override
     public String visitTernaryExpression(Expression.Ternary expression) {
         return parenthesize("ternary", expression.left, expression.left, expression.right);
     }
