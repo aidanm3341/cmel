@@ -260,7 +260,34 @@ public class Parser {
             return new Expression.Unary(operator, right);
         }
 
-        return primary();
+        return call();
+    }
+
+    private Expression call() {
+        Expression expression = primary();
+
+        while(true) {
+            if (match(LEFT_PAREN))
+                expression = finishCall(expression);
+            else
+                break;
+        }
+
+        return expression;
+    }
+
+    private Expression finishCall(Expression callee) {
+        List<Expression> arguments = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (arguments.size() >= 255)
+                    error(peek(), "Can't have more than 255 arguments.");
+                arguments.add(expression());
+            } while (match(COMMA));
+        }
+
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+        return new Expression.Call(callee, paren, arguments);
     }
 
     private Expression primary() {

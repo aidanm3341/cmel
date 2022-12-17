@@ -15,12 +15,13 @@ public class GenerateAst {
 
         defineAst(outputDir, "Expression", List.of(
                 "Assign : Token name, Expression value",
+                "Ternary : Expression test, Token question, Expression left, Token colon, Expression right",
                 "Binary : Expression left, Token operator, Expression right",
                 "Logical: Expression left, Token operator, Expression right",
                 "Grouping : Expression expression",
                 "Literal : Object value",
                 "Unary : Token operator, Expression right",
-                "Ternary : Expression test, Token question, Expression left, Token colon, Expression right",
+                "Call : Expression callee, Token paren, List<Expression> arguments",
                 "Variable : Token name"
         ));
 

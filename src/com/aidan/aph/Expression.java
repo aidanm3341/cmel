@@ -5,12 +5,13 @@ import java.util.List;
 public abstract class Expression {
     interface Visitor<R> {
         R visitAssignExpression(Assign expression);
+        R visitTernaryExpression(Ternary expression);
         R visitBinaryExpression(Binary expression);
         R visitLogicalExpression(Logical expression);
         R visitGroupingExpression(Grouping expression);
         R visitLiteralExpression(Literal expression);
         R visitUnaryExpression(Unary expression);
-        R visitTernaryExpression(Ternary expression);
+        R visitCallExpression(Call expression);
         R visitVariableExpression(Variable expression);
     }
 
@@ -27,6 +28,25 @@ public abstract class Expression {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitAssignExpression(this);
+        }
+    }
+    static class Ternary extends Expression {
+        final Expression test;
+        final  Token question;
+        final  Expression left;
+        final  Token colon;
+        final  Expression right;
+        public Ternary(Expression test, Token question, Expression left, Token colon, Expression right) {
+            this.test = test;
+            this.question = question;
+            this.left = left;
+            this.colon = colon;
+            this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitTernaryExpression(this);
         }
     }
     static class Binary extends Expression {
@@ -94,23 +114,19 @@ public abstract class Expression {
             return visitor.visitUnaryExpression(this);
         }
     }
-    static class Ternary extends Expression {
-        final Expression test;
-        final  Token question;
-        final  Expression left;
-        final  Token colon;
-        final  Expression right;
-        public Ternary(Expression test, Token question, Expression left, Token colon, Expression right) {
-            this.test = test;
-            this.question = question;
-            this.left = left;
-            this.colon = colon;
-            this.right = right;
+    static class Call extends Expression {
+        final Expression callee;
+        final  Token paren;
+        final  List<Expression> arguments;
+        public Call(Expression callee, Token paren, List<Expression> arguments) {
+            this.callee = callee;
+            this.paren = paren;
+            this.arguments = arguments;
         }
 
         @Override
         <R> R accept(Visitor<R> visitor) {
-            return visitor.visitTernaryExpression(this);
+            return visitor.visitCallExpression(this);
         }
     }
     static class Variable extends Expression {

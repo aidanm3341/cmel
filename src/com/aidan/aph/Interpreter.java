@@ -1,10 +1,18 @@
 package com.aidan.aph;
 
+import com.aidan.aph.nativeFunctions.Clock;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 
-    private Environment environment = new Environment();
+    private Environment globals = new Environment();
+    private Environment environment = globals;
+
+    public Interpreter() {
+        globals.define("clock", new Clock());
+    }
 
     public void interpret(List<Statement> statements) {
         try {
@@ -130,6 +138,24 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         // unreachable
         return null;
+    }
+
+    @Override
+    public Object visitCallExpression(Expression.Call expression) {
+        Object callee = evaluate(expression.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        for (Expression argument : expression.arguments)
+            arguments.add(evaluate(argument));
+
+        if (!(callee instanceof AphCallable))
+            throw new RuntimeError(expression.paren, "Can only call functions and classes");
+
+        AphCallable function = (AphCallable) callee;
+
+        if (arguments.size() != function.arity())
+            throw new RuntimeError(expression.paren, "Expected " + function.arity() + " arguments, but got " + arguments.size() + " instead.");
+        return function.call(this, arguments);
     }
 
     @Override
