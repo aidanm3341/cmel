@@ -52,6 +52,11 @@ public class AstPrinter implements Expression.Visitor<String> {
         return parenthesize("var", expression);
     }
 
+    @Override
+    public String visitAnonFunctionExpression(Expression.AnonFunction expression) {
+        return parenthesize("anonFunc", expression);
+    }
+
     private String parenthesize(String name, Expression... expressions) {
         StringBuilder builder = new StringBuilder();
         builder.append('(').append(name);

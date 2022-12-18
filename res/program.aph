@@ -1,14 +1,16 @@
-fun makeCounter() {
-    var i = 0;
-    fun count() {
-        i = i + 1;
-        print(i);
+fun repeat(x, fn) {
+    for (var i=0; i<x; i=i+1) {
+        fn(i);
     }
-
-    return count;
 }
 
-var counter = makeCounter();
-counter();
-counter();
-counter();
+repeat(5, fun(x) {
+    print (x + 1);
+});
+
+
+fun curry(x) {
+    return fun(y) { return x * y; };
+}
+
+print (curry(10)(6));
