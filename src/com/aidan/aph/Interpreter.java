@@ -225,6 +225,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public Void visitReturnStatement(Statement.Return statement) {
+        Object value = null;
+        if (statement.value != null) value = evaluate(statement.value);
+
+        throw new Return(value);
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");

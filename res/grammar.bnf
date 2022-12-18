@@ -1,7 +1,8 @@
 // statements
 program       ::= declaration* EOF ;
 declaration   ::= varDeclaration | funDeclaration | statement ;
-statement     ::= exprStatement | printStatement | ifStatement | whileStatement | forStatement | block ;
+statement     ::= exprStatement | printStatement | ifStatement | whileStatement | forStatement | returnStatement | block ;
+returnStatement ::= "return" expression? ";" ;
 forStatement  ::= "for" "(" ( varDeclaration | exprStatement | ";" ) expression? ";" expression? ")" statement ;
 whileStatement::= "while" "(" expression ")" statement ;
 ifStatement   ::= "if" "(" expression ")" statement ( "else" statement )?;
