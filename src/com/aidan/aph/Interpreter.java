@@ -220,7 +220,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitFunctionStatement(Statement.Function statement) {
-        AphFunction function = new AphFunction(statement);
+        AphFunction function = new AphFunction(statement, environment);
         environment.define(statement.name.getLexeme(), function);
         return null;
     }
