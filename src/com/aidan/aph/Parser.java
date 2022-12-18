@@ -288,6 +288,8 @@ public class Parser {
     }
 
     private Expression call() {
+        if (match(FUN)) return anonFunction();
+
         Expression expression = primary();
 
         while(true) {
@@ -298,6 +300,26 @@ public class Parser {
         }
 
         return expression;
+    }
+
+    private Expression anonFunction() {
+        consume(LEFT_PAREN, "Expect '(' after fun.");
+
+        List<Token> parameters = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        consume(LEFT_BRACE, "Expect '{' before anonymous function body.");
+        List<Statement> body = block();
+        return new Expression.AnonFunction(parameters, body);
     }
 
     private Expression finishCall(Expression callee) {

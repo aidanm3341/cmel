@@ -175,6 +175,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Object visitAnonFunctionExpression(Expression.AnonFunction expression) {
+        return new AphAnonFunction(expression, environment);
+    }
+
+    @Override
     public Void visitBlockStatement(Statement.Block statement) {
         executeBlock(statement.statements, new Environment(environment));
         return null;

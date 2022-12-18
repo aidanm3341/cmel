@@ -13,6 +13,7 @@ public abstract class Expression {
         R visitUnaryExpression(Unary expression);
         R visitCallExpression(Call expression);
         R visitVariableExpression(Variable expression);
+        R visitAnonFunctionExpression(AnonFunction expression);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -138,6 +139,19 @@ public abstract class Expression {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitVariableExpression(this);
+        }
+    }
+    static class AnonFunction extends Expression {
+        final List<Token> parameters;
+        final  List<Statement> body;
+        public AnonFunction(List<Token> parameters, List<Statement> body) {
+            this.parameters = parameters;
+            this.body = body;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAnonFunctionExpression(this);
         }
     }
 }
