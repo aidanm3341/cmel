@@ -1,6 +1,7 @@
 package com.aidan.aph;
 
 import com.aidan.aph.nativeFunctions.Clock;
+import com.aidan.aph.nativeFunctions.Print;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     public Interpreter() {
         globals.define("clock", new Clock());
+        globals.define("print", new Print());
     }
 
     public void interpret(List<Statement> statements) {
@@ -190,13 +192,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             execute(statement.thenBranch);
         else if (statement.elseBranch != null)
             execute(statement.elseBranch);
-        return null;
-    }
-
-    @Override
-    public Void visitPrintStatement(Statement.Print statement) {
-        Object value = evaluate(statement.expression);
-        System.out.println(stringify(value));
         return null;
     }
 

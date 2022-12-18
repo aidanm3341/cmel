@@ -67,7 +67,6 @@ public class Parser {
     private Statement statement() {
         if (match(FOR)) return forStatement();
         if (match(IF)) return ifStatement();
-        if (match(PRINT)) return printStatement();
         if (match(RETURN)) return returnStatement();
         if (match(WHILE)) return whileStatement();
         if (match(LEFT_BRACE)) return new Statement.Block(block());
@@ -126,12 +125,6 @@ public class Parser {
             elseBranch = statement();
 
         return new Statement.IfStatement(condition, thenBranch, elseBranch);
-    }
-
-    private Statement printStatement() {
-        Expression value = expression();
-        consume(SEMICOLON, "Expect ';' after value.");
-        return new Statement.Print(value);
     }
 
     private Statement returnStatement() {
@@ -358,7 +351,7 @@ public class Parser {
             if (previous().getType() == SEMICOLON) return;
 
             switch (peek().getType()) {
-                case CLASS, FUN, VAR, FOR, IF, WHILE, PRINT, RETURN -> {
+                case CLASS, FUN, VAR, FOR, IF, WHILE, RETURN -> {
                     return;
                 }
             }

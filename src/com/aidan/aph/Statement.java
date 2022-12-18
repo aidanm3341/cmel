@@ -7,7 +7,6 @@ public abstract class Statement {
         R visitBlockStatement(Block statement);
         R visitExpressionStatementStatement(ExpressionStatement statement);
         R visitIfStatementStatement(IfStatement statement);
-        R visitPrintStatement(Print statement);
         R visitVarStatement(Var statement);
         R visitWhileStatement(While statement);
         R visitFunctionStatement(Function statement);
@@ -51,17 +50,6 @@ public abstract class Statement {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitIfStatementStatement(this);
-        }
-    }
-    static class Print extends Statement {
-        final Expression expression;
-        public Print(Expression expression) {
-            this.expression = expression;
-        }
-
-        @Override
-        <R> R accept(Visitor<R> visitor) {
-            return visitor.visitPrintStatement(this);
         }
     }
     static class Var extends Statement {

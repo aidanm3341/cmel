@@ -23,7 +23,6 @@ public class Scanner {
         keywords.put("false", FALSE);
         keywords.put("true", TRUE);
         keywords.put("nil", NIL);
-        keywords.put("print", PRINT);
         keywords.put("return", RETURN);
         keywords.put("super", SUPER);
         keywords.put("this", THIS);
