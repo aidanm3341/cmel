@@ -313,7 +313,7 @@ public class Parser {
     private Expression primary() {
         if (match(TRUE)) return new Expression.Literal(true);
         if (match(FALSE)) return new Expression.Literal(false);
-        if (match(NULL)) return new Expression.Literal(null);
+        if (match(NIL)) return new Expression.Literal(null);
 
         if (match(NUMBER, STRING))
             return new Expression.Literal(previous().getLiteral());

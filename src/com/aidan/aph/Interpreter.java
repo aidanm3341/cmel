@@ -25,7 +25,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     private String stringify(Object value) {
-        if (value == null) return "null";
+        if (value == null) return "nil";
 
         if (value instanceof Double) {
             String text = value.toString();
