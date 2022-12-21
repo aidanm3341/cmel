@@ -4,14 +4,18 @@ import com.aidan.aph.nativeFunctions.Clock;
 import com.aidan.aph.nativeFunctions.Print;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 
     private Environment globals = new Environment();
     private Environment environment = globals;
+    private Map<Expression, Integer> locals;
 
     public Interpreter() {
+        locals = new HashMap<>();
         globals.define("clock", new Clock());
         globals.define("print", new Print());
     }
@@ -43,7 +47,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public Object visitAssignExpression(Expression.Assign expression) {
         Object value = evaluate(expression.value);
-        environment.assign(expression.name, value);
+
+        Integer distance = locals.get(expression);
+        if (distance != null)
+            environment.assignAt(distance, expression.name, value);
+        else
+            globals.assign(expression.name, value);
+
         return value;
     }
 
@@ -171,7 +181,15 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Object visitVariableExpression(Expression.Variable expression) {
-        return environment.get(expression.name);
+        return lookupVariable(expression.name, expression);
+    }
+
+    private Object lookupVariable(Token name, Expression expression) {
+        Integer distance = locals.get(expression);
+        if (distance != null)
+            return environment.getAt(distance, name.getLexeme());
+        else
+            return globals.get(name);
     }
 
     @Override
@@ -277,5 +295,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     public Environment getGlobals() {
         return globals;
+    }
+
+    public void resolve(Expression expression, int depth) {
+        locals.put(expression, depth);
     }
 }

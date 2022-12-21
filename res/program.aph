@@ -9,8 +9,9 @@ repeat(5, fun(x) {
 });
 
 
-fun curry(x) {
+fun partMul(x) {
     return fun(y) { return x * y; };
 }
 
-print (curry(10)(6));
+print( partMul(10)(6) );
+
