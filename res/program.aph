@@ -13,5 +13,6 @@ fun partMul(x) {
     return fun(y) { return x * y; };
 }
 
-print( partMul(10)(6) );
+print("Number to double: ");
+print( partMul(2)(input()) );
 

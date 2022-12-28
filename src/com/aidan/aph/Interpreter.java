@@ -1,6 +1,7 @@
 package com.aidan.aph;
 
 import com.aidan.aph.nativeFunctions.Clock;
+import com.aidan.aph.nativeFunctions.Input;
 import com.aidan.aph.nativeFunctions.Print;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         locals = new HashMap<>();
         globals.define("clock", new Clock());
         globals.define("print", new Print());
+        globals.define("input", new Input());
     }
 
     public void interpret(List<Statement> statements) {
@@ -258,7 +260,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     private void checkNumberOperands(Token operator, Object left, Object right) {
         if (left instanceof Double && right instanceof Double) return;
-        throw new RuntimeError(operator, "Operands must be a numbers.");
+        throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
     private boolean isEqual(Object left, Object right) {

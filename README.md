@@ -6,3 +6,4 @@ There are some subtle differences/add-ons from Lox, namely;
 - Ternary operator
 - Print is a built-in function, rather than part of the language
 - Anonymous functions
+- Input function
