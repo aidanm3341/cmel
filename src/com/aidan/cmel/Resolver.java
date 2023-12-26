@@ -1,4 +1,4 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +78,7 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     @Override
     public Void visitVariableExpression(Expression.Variable expression) {
         if (!scopes.isEmpty() && scopes.peek().get(expression.name.getLexeme()) == Boolean.FALSE)
-            Aph.error(expression.name, "Can't read local variable in it's own initializer;");
+            Cmel.error(expression.name, "Can't read local variable in it's own initializer;");
 
         resolveLocal(expression, expression.name);
         return null;
@@ -156,7 +156,7 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
         if (scopes.isEmpty()) return;
         Map<String, Boolean> scope = scopes.peek();
         if (scope.containsKey(name.getLexeme()))
-            Aph.error(name, "There is already a variable with this name in scope.");
+            Cmel.error(name, "There is already a variable with this name in scope.");
         scope.put(name.getLexeme(), false);
     }
 
@@ -212,7 +212,7 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     @Override
     public Void visitReturnStatement(Statement.Return statement) {
         if (currentFunction == FunctionType.NONE)
-            Aph.error(statement.keyword, "Can't return outside of a function.");
+            Cmel.error(statement.keyword, "Can't return outside of a function.");
         if (statement.value != null) resolve(statement.value);
         return null;
     }

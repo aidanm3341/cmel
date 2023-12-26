@@ -1,4 +1,4 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,10 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static com.aidan.aph.TokenType.EOF;
+import static com.aidan.cmel.TokenType.EOF;
 import static java.lang.Thread.sleep;
 
-public class Aph {
+public class Cmel {
     private static boolean hadError;
     private static boolean hadRuntimeError;
 
@@ -19,7 +19,7 @@ public class Aph {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length > 1) {
-            System.out.println("Usage: aph [script]");
+            System.out.println("Usage: cmel [script]");
             System.exit(64);
         } else if (args.length == 1) {
             runFile(args[0]);

@@ -1,11 +1,11 @@
-package com.aidan.aph.nativeFunctions;
+package com.aidan.cmel.nativeFunctions;
 
-import com.aidan.aph.AphCallable;
-import com.aidan.aph.Interpreter;
+import com.aidan.cmel.CmelCallable;
+import com.aidan.cmel.Interpreter;
 
 import java.util.List;
 
-public class Clock implements AphCallable {
+public class Clock implements CmelCallable {
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
         return (double)System.currentTimeMillis() / 1000;

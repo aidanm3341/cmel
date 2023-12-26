@@ -1,11 +1,11 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.aidan.aph.TokenType.*;
+import static com.aidan.cmel.TokenType.*;
 
 public class Scanner {
 
@@ -91,7 +91,7 @@ public class Scanner {
                 else if (isAlpha(c))
                     identifier();
                 else
-                    Aph.error(line, "Unexpected character.");
+                    Cmel.error(line, "Unexpected character.");
             }
         }
     }
@@ -120,7 +120,7 @@ public class Scanner {
         }
 
         if (isAtEnd()) {
-            Aph.error(line, "Unterminated string.");
+            Cmel.error(line, "Unterminated string.");
             return;
         }
 

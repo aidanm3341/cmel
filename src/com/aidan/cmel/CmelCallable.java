@@ -1,8 +1,8 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 import java.util.List;
 
-public interface AphCallable {
+public interface CmelCallable {
     Object call(Interpreter interpreter, List<Object> arguments);
     int arity();
 }

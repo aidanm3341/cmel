@@ -1,9 +1,9 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.aidan.aph.TokenType.*;
+import static com.aidan.cmel.TokenType.*;
 
 public class Parser {
 
@@ -362,7 +362,7 @@ public class Parser {
     }
 
     private ParseError error(Token token, String message) {
-        Aph.error(token, message);
+        Cmel.error(token, message);
         return new ParseError();
     }
 

@@ -1,12 +1,12 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 import java.util.List;
 
-public class AphAnonFunction implements AphCallable {
-    private final Expression.AnonFunction declaration;
+public class CmelFunction implements CmelCallable {
+    private final Statement.Function declaration;
     private final Environment closure;
 
-    public AphAnonFunction(Expression.AnonFunction declaration, Environment closure) {
+    public CmelFunction(Statement.Function declaration, Environment closure) {
         this.declaration = declaration;
         this.closure = closure;
     }
@@ -33,6 +33,6 @@ public class AphAnonFunction implements AphCallable {
 
     @Override
     public String toString() {
-        return "<fn anon>";
+        return "<fn " + declaration.name.getLexeme() + ">";
     }
 }

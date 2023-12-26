@@ -1,4 +1,4 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 public class RuntimeError extends RuntimeException {
     private final Token token;

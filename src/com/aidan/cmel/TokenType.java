@@ -1,4 +1,4 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
 public enum TokenType {
     // single char tokens

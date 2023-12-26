@@ -1,16 +1,14 @@
-package com.aidan.aph.nativeFunctions;
+package com.aidan.cmel.nativeFunctions;
 
-import com.aidan.aph.AphCallable;
-import com.aidan.aph.Interpreter;
-import com.aidan.aph.RuntimeError;
-import com.aidan.aph.Token;
+import com.aidan.cmel.CmelCallable;
+import com.aidan.cmel.Interpreter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
-public class Input implements AphCallable {
+public class Input implements CmelCallable {
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
         InputStreamReader inputStreamReader = new InputStreamReader(System.in);

@@ -1,8 +1,8 @@
-package com.aidan.aph;
+package com.aidan.cmel;
 
-import com.aidan.aph.nativeFunctions.Clock;
-import com.aidan.aph.nativeFunctions.Input;
-import com.aidan.aph.nativeFunctions.Print;
+import com.aidan.cmel.nativeFunctions.Clock;
+import com.aidan.cmel.nativeFunctions.Input;
+import com.aidan.cmel.nativeFunctions.Print;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 execute(statement);
             }
         } catch (RuntimeError error) {
-            Aph.runtimeError(error);
+            Cmel.runtimeError(error);
         }
     }
 
@@ -162,10 +162,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         for (Expression argument : expression.arguments)
             arguments.add(evaluate(argument));
 
-        if (!(callee instanceof AphCallable))
+        if (!(callee instanceof CmelCallable))
             throw new RuntimeError(expression.paren, "Can only call functions and classes");
 
-        AphCallable function = (AphCallable) callee;
+        CmelCallable function = (CmelCallable) callee;
 
         if (arguments.size() != function.arity())
             throw new RuntimeError(expression.paren, "Expected " + function.arity() + " arguments, but got " + arguments.size() + " instead.");
@@ -196,7 +196,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Object visitAnonFunctionExpression(Expression.AnonFunction expression) {
-        return new AphAnonFunction(expression, environment);
+        return new CmelAnonFunction(expression, environment);
     }
 
     @Override
@@ -240,7 +240,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitFunctionStatement(Statement.Function statement) {
-        AphFunction function = new AphFunction(statement, environment);
+        CmelFunction function = new CmelFunction(statement, environment);
         environment.define(statement.name.getLexeme(), function);
         return null;
     }
