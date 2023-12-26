@@ -23,6 +23,7 @@ public class GenerateAst {
                 "Unary : Token operator, Expression right",
                 "Call : Expression callee, Token paren, List<Expression> arguments",
                 "Get : Expression object, Token name",
+                "Set: Expression object, Token name, Expression value",
                 "Variable : Token name",
                 "AnonFunction : List<Token> parameters, List<Statement> body"
         ));

@@ -50,6 +50,13 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     }
 
     @Override
+    public Void visitSetExpression(Expression.Set expression) {
+        resolve(expression.value);
+        resolve(expression.object);
+        return null;
+    }
+
+    @Override
     public Void visitGroupingExpression(Expression.Grouping expression) {
         resolve(expression.expression);
         return null;

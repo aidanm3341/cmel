@@ -19,6 +19,10 @@ public class CmelInstance {
         throw new RuntimeError(name, "Undefined property '" + name.getLexeme() + "'.");
     }
 
+    public void set(Token name, Object value) {
+        fields.put(name.getLexeme(), value);
+    }
+
     public String toString() {
         return klass.name + " instance";
     }
