@@ -1,7 +1,5 @@
 package com.aidan.cmel;
 
-import com.aidan.cmel.Token;
-
 import java.util.List;
 
 public abstract class Expression {
@@ -14,6 +12,7 @@ public abstract class Expression {
         R visitLiteralExpression(Literal expression);
         R visitUnaryExpression(Unary expression);
         R visitCallExpression(Call expression);
+        R visitGetExpression(Get expression);
         R visitVariableExpression(Variable expression);
         R visitAnonFunctionExpression(AnonFunction expression);
     }
@@ -130,6 +129,19 @@ public abstract class Expression {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitCallExpression(this);
+        }
+    }
+    static class Get extends Expression {
+        final Expression object;
+        final  Token name;
+        public Get(Expression object, Token name) {
+            this.object = object;
+            this.name = name;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGetExpression(this);
         }
     }
     static class Variable extends Expression {

@@ -261,6 +261,16 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         throw new Return(value);
     }
 
+    @Override
+    public Object visitGetExpression(Expression.Get expression) {
+        Object object = evaluate(expression.object);
+        if (object instanceof CmelInstance) {
+            return ((CmelInstance) object).get(expression.name);
+        }
+
+        throw new RuntimeError(expression.name, "Only instances have properties");
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");

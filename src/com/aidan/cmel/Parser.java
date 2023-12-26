@@ -308,10 +308,14 @@ public class Parser {
         Expression expression = primary();
 
         while(true) {
-            if (match(LEFT_PAREN))
+            if (match(LEFT_PAREN)) {
                 expression = finishCall(expression);
-            else
+            } else if (match(DOT)) {
+                Token name = consume(IDENTIFIER, "Expect property name after '.'.");
+                expression = new Expression.Get(expression, name);
+            } else{
                 break;
+            }
         }
 
         return expression;

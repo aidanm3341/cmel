@@ -114,6 +114,12 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
         return null;
     }
 
+    @Override
+    public Void visitGetExpression(Expression.Get expression) {
+        resolve(expression.object);
+        return null;
+    }
+
     private void beginScope() {
         scopes.push(new HashMap<>());
     }
