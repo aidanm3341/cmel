@@ -365,6 +365,9 @@ public class Parser {
         if (match(NUMBER, STRING))
             return new Expression.Literal(previous().getLiteral());
 
+        if (match(THIS))
+            return new Expression.This(previous());
+
         if (match(IDENTIFIER))
             return new Expression.Variable(previous());
 

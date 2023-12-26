@@ -53,6 +53,11 @@ public class AstPrinter implements Expression.Visitor<String> {
     }
 
     @Override
+    public String visitThisExpression(Expression.This expression) {
+        return "this";
+    }
+
+    @Override
     public String visitTernaryExpression(Expression.Ternary expression) {
         return parenthesize("ternary", expression.left, expression.left, expression.right);
     }

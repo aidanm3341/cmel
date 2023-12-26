@@ -16,6 +16,9 @@ public class CmelInstance {
         if (fields.containsKey(name.getLexeme()))
             return fields.get(name.getLexeme());
 
+        CmelFunction method = klass.findMethod(name.getLexeme());
+        if (method != null) return method.bind(this);
+
         throw new RuntimeError(name, "Undefined property '" + name.getLexeme() + "'.");
     }
 

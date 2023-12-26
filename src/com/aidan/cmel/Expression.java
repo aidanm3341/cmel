@@ -14,6 +14,7 @@ public abstract class Expression {
         R visitCallExpression(Call expression);
         R visitGetExpression(Get expression);
         R visitSetExpression(Set expression);
+        R visitThisExpression(This expression);
         R visitVariableExpression(Variable expression);
         R visitAnonFunctionExpression(AnonFunction expression);
     }
@@ -158,6 +159,17 @@ public abstract class Expression {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitSetExpression(this);
+        }
+    }
+    static class This extends Expression {
+        final Token keyword;
+        public This(Token keyword) {
+            this.keyword = keyword;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitThisExpression(this);
         }
     }
     static class Variable extends Expression {

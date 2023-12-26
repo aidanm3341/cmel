@@ -208,9 +208,21 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public Void visitClassStatement(Statement.Class statement) {
         environment.define(statement.name.getLexeme(), null);
-        CmelClass klass = new CmelClass(statement.name.getLexeme());
+
+        Map<String, CmelFunction> methods = new HashMap<>();
+        for (Statement.Function method : statement.methods) {
+            CmelFunction function = new CmelFunction(method, environment, method.name.getLexeme().equals("init"));
+            methods.put(method.name.getLexeme(), function);
+        }
+
+        CmelClass klass = new CmelClass(statement.name.getLexeme(), methods);
         environment.assign(statement.name, klass);
         return null;
+    }
+
+    @Override
+    public Object visitThisExpression(Expression.This expression) {
+        return lookupVariable(expression.keyword, expression);
     }
 
     @Override
@@ -248,7 +260,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitFunctionStatement(Statement.Function statement) {
-        CmelFunction function = new CmelFunction(statement, environment);
+        CmelFunction function = new CmelFunction(statement, environment, false);
         environment.define(statement.name.getLexeme(), function);
         return null;
     }

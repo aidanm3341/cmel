@@ -24,6 +24,7 @@ public class GenerateAst {
                 "Call : Expression callee, Token paren, List<Expression> arguments",
                 "Get : Expression object, Token name",
                 "Set: Expression object, Token name, Expression value",
+                "This: Token keyword",
                 "Variable : Token name",
                 "AnonFunction : List<Token> parameters, List<Statement> body"
         ));

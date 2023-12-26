@@ -8,8 +8,14 @@ import java.util.Stack;
 public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Void> {
 
     private enum FunctionType {
-        NONE, FUNCTION
+        NONE, FUNCTION, METHOD, INITIALIZER
     }
+
+    private enum ClassType {
+        NONE, CLASS
+    }
+
+    private ClassType currentClass = ClassType.NONE;
 
     private final Interpreter interpreter;
     private final Stack<Map<String, Boolean>> scopes;
@@ -116,14 +122,43 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
 
     @Override
     public Void visitClassStatement(Statement.Class statement) {
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+
         declare(statement.name);
         define(statement.name);
+
+        beginScope();
+        scopes.peek().put("this", true);
+
+        for (Statement.Function method : statement.methods) {
+            FunctionType declaration = FunctionType.METHOD;
+            if (method.name.getLexeme().equals("init"))
+                declaration = FunctionType.INITIALIZER;
+
+            resolveFunction(method, declaration);
+        }
+
+        endScope();
+
+        currentClass = enclosingClass;
         return null;
     }
 
     @Override
     public Void visitGetExpression(Expression.Get expression) {
         resolve(expression.object);
+        return null;
+    }
+
+    @Override
+    public Void visitThisExpression(Expression.This expression) {
+        if (currentClass == ClassType.NONE) {
+            Cmel.error(expression.keyword, "Can't use 'this' outside of a class.");
+            return null;
+        }
+
+        resolveLocal(expression, expression.keyword);
         return null;
     }
 
@@ -233,7 +268,12 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     public Void visitReturnStatement(Statement.Return statement) {
         if (currentFunction == FunctionType.NONE)
             Cmel.error(statement.keyword, "Can't return outside of a function.");
-        if (statement.value != null) resolve(statement.value);
+        if (statement.value != null) {
+            if (currentFunction == FunctionType.INITIALIZER) {
+                Cmel.error(statement.keyword, "Can't return a value from an initializer.");
+            }
+            resolve(statement.value);
+        }
         return null;
     }
 }

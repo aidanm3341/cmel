@@ -5,10 +5,12 @@ import java.util.List;
 public class CmelFunction implements CmelCallable {
     private final Statement.Function declaration;
     private final Environment closure;
+    private final boolean isInitializer;
 
-    public CmelFunction(Statement.Function declaration, Environment closure) {
+    public CmelFunction(Statement.Function declaration, Environment closure, boolean isInitializer) {
         this.declaration = declaration;
         this.closure = closure;
+        this.isInitializer = isInitializer;
     }
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
@@ -20,10 +22,19 @@ public class CmelFunction implements CmelCallable {
         try {
             interpreter.executeBlock(declaration.body, environment);
         } catch (Return returnValue) {
+            if (isInitializer) return closure.getAt(0, "this");
+
             return returnValue.getValue();
         }
 
+        if (isInitializer) return closure.getAt(0, "this");
         return null;
+    }
+
+    public CmelFunction bind(CmelInstance instance) {
+        Environment environment = new Environment(closure);
+        environment.define("this", instance);
+        return new CmelFunction(declaration, environment, isInitializer);
     }
 
     @Override
