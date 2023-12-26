@@ -11,6 +11,7 @@ public abstract class Statement {
         R visitWhileStatement(While statement);
         R visitFunctionStatement(Function statement);
         R visitReturnStatement(Return statement);
+        R visitClassStatement(Class statement);
     }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -104,6 +105,19 @@ public abstract class Statement {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitReturnStatement(this);
+        }
+    }
+    static class Class extends Statement {
+        final Token name;
+        final  List<Statement.Function> methods;
+        public Class(Token name, List<Statement.Function> methods) {
+            this.name = name;
+            this.methods = methods;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitClassStatement(this);
         }
     }
 }

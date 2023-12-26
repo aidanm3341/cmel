@@ -33,7 +33,8 @@ public class GenerateAst {
                 "Var : Token name, Expression initializer",
                 "While : Expression condition, Statement body",
                 "Function : Token name, List<Token> parameters, List<Statement> body",
-                "Return : Token keyword, Expression value"
+                "Return : Token keyword, Expression value",
+                "Class : Token name, List<Statement.Function> methods"
         ));
     }
 
@@ -41,7 +42,7 @@ public class GenerateAst {
         String path = outputDir + "/" + baseName + ".java";
         PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);
 
-        writer.println("package com.aidan.aph;");
+        writer.println("package com.aidan.cmel;");
         writer.println();
         writer.println("import java.util.List;");
         writer.println();

@@ -1,5 +1,7 @@
 package com.aidan.cmel;
 
+import com.aidan.cmel.Token;
+
 import java.util.List;
 
 public abstract class Expression {

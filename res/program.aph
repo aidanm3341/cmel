@@ -1,31 +1,8 @@
-fun repeat(x) {
-    return fun(fn) {
-        for (var i=0; i<x; i=i+1) {
-            fn();
-        }
-    };
+class BeansOnToast {
+    serve() {
+        return "Dinner's served!";
+    }
 }
 
-fun repeatWithIndex(x) {
-    return fun(fn) {
-        for (var i=0; i<x; i=i+1) {
-            fn(i);
-        }
-    };
-}
-
-fun partMul(x) {
-    return fun(y) { return x * y; };
-}
-
-fun double(x) {
-    return x * 2;
-}
-
-fun compose(fn1, fn2) {
-    return fun(x){ return fn2(fn1(x)); };
-}
-
-var doob = compose(double, double);
-print(doob(1));
-
+var thing = BeansOnToast();
+print(thing);

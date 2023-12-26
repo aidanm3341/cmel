@@ -1,6 +1,6 @@
 // statements
 program       ::= declaration* EOF ;
-declaration   ::= varDeclaration | funDeclaration | statement ;
+declaration   ::= varDeclaration | funDeclaration | classDeclaration | statement ;
 statement     ::= exprStatement | printStatement | ifStatement | whileStatement | forStatement | returnStatement | block ;
 returnStatement ::= "return" expression? ";" ;
 forStatement  ::= "for" "(" ( varDeclaration | exprStatement | ";" ) expression? ";" expression? ")" statement ;
@@ -11,6 +11,7 @@ exprStatement ::= expression ";" ;
 printStatement ::= "print" expression ";" ;
 varDeclaration ::= "var" IDENTIFIER ( "=" expression )? ";" ;
 funDeclaration ::= "fun" function ;
+classDeclaration ::= "class" IDENTIFIER "{" function* "}" ;
 function       ::= IDENTIFIER "(" parameters* ")" block ;
 parameters     ::= IDENTIFIER ( "," IDENTIFIER )* ;
 

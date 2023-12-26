@@ -206,6 +206,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Void visitClassStatement(Statement.Class statement) {
+        environment.define(statement.name.getLexeme(), null);
+        CmelClass klass = new CmelClass(statement.name.getLexeme());
+        environment.assign(statement.name, klass);
+        return null;
+    }
+
+    @Override
     public Void visitExpressionStatementStatement(Statement.ExpressionStatement statement) {
         evaluate(statement.expression);
         return null;
