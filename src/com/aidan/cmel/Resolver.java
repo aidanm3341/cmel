@@ -12,7 +12,7 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     }
 
     private enum ClassType {
-        NONE, CLASS
+        NONE, CLASS, SUBCLASS
     }
 
     private ClassType currentClass = ClassType.NONE;
@@ -59,6 +59,17 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     public Void visitSetExpression(Expression.Set expression) {
         resolve(expression.value);
         resolve(expression.object);
+        return null;
+    }
+
+    @Override
+    public Void visitSuperExpression(Expression.Super expression) {
+        if (currentClass == ClassType.NONE) {
+            Cmel.error(expression.keyword, "Can't use 'super' outside of a class.");
+        } else if (currentClass != ClassType.SUBCLASS) {
+            Cmel.error(expression.keyword, "Can't use 'super' in a class with no superclass.");
+        }
+        resolveLocal(expression, expression.keyword);
         return null;
     }
 
@@ -128,6 +139,20 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
         declare(statement.name);
         define(statement.name);
 
+        if (statement.superclass != null && statement.superclass.name.getLexeme().equals(statement.name.getLexeme())) {
+            Cmel.error(statement.superclass.name, "A class can't inherit from itself.");
+        }
+
+        if (statement.superclass != null) {
+            currentClass = ClassType.SUBCLASS;
+            resolve(statement.superclass);
+        }
+
+        if (statement.superclass != null) {
+            beginScope();
+            scopes.peek().put("super", true);
+        }
+
         beginScope();
         scopes.peek().put("this", true);
 
@@ -140,6 +165,9 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
         }
 
         endScope();
+
+        if (statement.superclass != null)
+            endScope();
 
         currentClass = enclosingClass;
         return null;

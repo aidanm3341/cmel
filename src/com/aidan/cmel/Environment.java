@@ -59,4 +59,8 @@ public class Environment {
     public void assignAt(int distance, Token name, Object value) {
         ancestor(distance).values.put(name.getLexeme(), value);
     }
+
+    public Environment getEnclosing() {
+        return enclosing;
+    }
 }

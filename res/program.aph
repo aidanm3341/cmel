@@ -1,9 +1,15 @@
-class BeansOnToast {
-    serve() {
-        return "Dinner's served " + this.name;
+class Superhero {
+    land() {
+        print("thunk!");
     }
 }
 
-var thing = BeansOnToast();
-thing.name = "aidan";
-print(thing.serve());
+class Batman {
+    test() {
+        print("kachow!");
+        super.land();
+    }
+}
+
+var thing = Batman();
+thing.test();

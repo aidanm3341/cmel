@@ -109,9 +109,11 @@ public abstract class Statement {
     }
     static class Class extends Statement {
         final Token name;
+        final  Expression.Variable superclass;
         final  List<Statement.Function> methods;
-        public Class(Token name, List<Statement.Function> methods) {
+        public Class(Token name, Expression.Variable superclass, List<Statement.Function> methods) {
             this.name = name;
+            this.superclass = superclass;
             this.methods = methods;
         }
 

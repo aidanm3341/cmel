@@ -5,16 +5,22 @@ import java.util.Map;
 
 public class CmelClass implements CmelCallable {
     final String name;
+    final CmelClass superclass;
     final Map<String, CmelFunction> methods;
 
-    public CmelClass(String name, Map<String, CmelFunction> methods) {
+    public CmelClass(String name, CmelClass superclass, Map<String, CmelFunction> methods) {
         this.name = name;
+        this.superclass = superclass;
         this.methods = methods;
     }
 
     public CmelFunction findMethod(String name) {
         if (methods.containsKey(name)) {
             return methods.get(name);
+        }
+
+        if (superclass != null) {
+            return superclass.findMethod(name);
         }
 
         return null;

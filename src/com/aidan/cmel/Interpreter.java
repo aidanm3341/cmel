@@ -207,7 +207,19 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitClassStatement(Statement.Class statement) {
+        Object superclass = null;
+        if (statement.superclass != null) {
+            superclass = evaluate(statement.superclass);
+            if (!(superclass instanceof CmelClass)) {
+                throw new RuntimeError(statement.superclass.name, "Superclass must be a class.");
+            }
+        }
         environment.define(statement.name.getLexeme(), null);
+
+        if (statement.superclass != null) {
+            environment = new Environment(environment);
+            environment.define("super", superclass);
+        }
 
         Map<String, CmelFunction> methods = new HashMap<>();
         for (Statement.Function method : statement.methods) {
@@ -215,7 +227,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             methods.put(method.name.getLexeme(), function);
         }
 
-        CmelClass klass = new CmelClass(statement.name.getLexeme(), methods);
+        CmelClass klass = new CmelClass(statement.name.getLexeme(), (CmelClass)superclass, methods);
+
+        if (superclass != null) {
+            environment = environment.getEnclosing();
+        }
+
         environment.assign(statement.name, klass);
         return null;
     }
@@ -294,6 +311,21 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         Object value = evaluate(expression.value);
         ((CmelInstance) object).set(expression.name, value);
         return value;
+    }
+
+    @Override
+    public Object visitSuperExpression(Expression.Super expression) {
+        int distance = locals.get(expression);
+        CmelClass superclass = (CmelClass) environment.getAt(distance, "super");
+        CmelInstance object = (CmelInstance) environment.getAt(distance - 1, "this");
+
+        CmelFunction method = superclass.findMethod(expression.method.getLexeme());
+
+        if (method == null) {
+            throw new RuntimeError(expression.method, "Undefined property '" + expression.method.getLexeme() + "'.");
+        }
+
+        return method.bind(object);
     }
 
     private void checkNumberOperand(Token operator, Object operand) {

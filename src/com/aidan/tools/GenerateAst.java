@@ -23,8 +23,9 @@ public class GenerateAst {
                 "Unary : Token operator, Expression right",
                 "Call : Expression callee, Token paren, List<Expression> arguments",
                 "Get : Expression object, Token name",
-                "Set: Expression object, Token name, Expression value",
-                "This: Token keyword",
+                "Set : Expression object, Token name, Expression value",
+                "Super : Token keyword, Token method",
+                "This : Token keyword",
                 "Variable : Token name",
                 "AnonFunction : List<Token> parameters, List<Statement> body"
         ));
@@ -37,7 +38,7 @@ public class GenerateAst {
                 "While : Expression condition, Statement body",
                 "Function : Token name, List<Token> parameters, List<Statement> body",
                 "Return : Token keyword, Expression value",
-                "Class : Token name, List<Statement.Function> methods"
+                "Class : Token name, Expression.Variable superclass, List<Statement.Function> methods"
         ));
     }
 
