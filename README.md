@@ -40,3 +40,7 @@ or execute a file by passing it the path
 - [ ] Syntax Highlighter
 - [ ] Language Server
 - [ ] Test Runner
+
+### Misc
+
+- In chapter 18 it's mentioned that `a <= b` should not be the same as `!(a > b)` but in cmel it is. Fix by introducing dedicated instructions for `<=`, `>=` and maybe `!=` while you're at it
