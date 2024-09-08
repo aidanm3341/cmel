@@ -31,6 +31,7 @@ or execute a file by passing it the path
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator
 - [ ] String interpolation
+- [ ] Try/Catch
 - [ ] Anonymous Functions
 - [ ] Modules
 
