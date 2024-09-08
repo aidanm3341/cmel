@@ -30,7 +30,9 @@ or execute a file by passing it the path
 - [ ] Arrays/Lists
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator
+- [ ] String Escape Characters
 - [ ] String interpolation
+- [ ] Implicit convert to string on all types for concatenation
 - [ ] Try/Catch
 - [ ] Anonymous Functions
 - [ ] Modules
