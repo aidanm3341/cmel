@@ -36,6 +36,7 @@ or execute a file by passing it the path
 - [ ] Try/Catch
 - [ ] Anonymous Functions
 - [ ] Modules
+- [ ] User facing Hash Tables (Including non-string keys)
 
 ### Tooling
 
