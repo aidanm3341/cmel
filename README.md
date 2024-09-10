@@ -23,6 +23,14 @@ or execute a file by passing it the path
 ./cmel <filepath>
 ```
 
+## Testing
+
+To test the code, first build the executable using the build script, then navigate to the test folder and run
+
+```
+node --test
+```
+
 ## Todo
 
 ### Language Features
