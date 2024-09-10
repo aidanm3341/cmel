@@ -23,4 +23,9 @@ describe("cmel", () => {
         const {err, stdout, stderr} = await execRun("../cmel missing_semicolon.cmel");
         assert.equal(stderr, "[line 1] Error at end: Expect ';' after value.\n");
     });
+
+    it("should assign to variables and read from them", async () => {
+        const {err, stdout, stderr} = await execRun("../cmel var_declarations.cmel");
+        assert.equal(stdout, "caramel fiona\n");
+    });
 });
