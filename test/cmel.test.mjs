@@ -11,21 +11,40 @@ function execRun(cmd) {
     });
 }
 
-describe("cmel", () => {
-    it("should execute basic multiplication", async () => {
-        const {err, stdout, stderr} = await execRun("../cmel multiplication.cmel");
-        assert.equal(stdout, "10\n");
+async function expectError(file, error) {
+    const {err, stdout, stderr} = await execRun('../cmel ' + file);
+    assert.equal(stderr, error + '\n');
+}
+
+async function expect(file, output) {
+    const {err, stdout, stderr} = await execRun('../cmel ' + file);
+    assert.equal(stdout, output + '\n');
+}
+
+describe('cmel', async () => {
+    it('should execute basic multiplication', async () => {
+        expect('multiplication.cmel', '10');
     });
 
-    it("should throw error with missing semicolon", async () => {
-        const data = readFileSync('missing_semicolon.cmel', 'utf-8');
-        console.log(data);
-        const {err, stdout, stderr} = await execRun("../cmel missing_semicolon.cmel");
-        assert.equal(stderr, "[line 1] Error at end: Expect ';' after value.\n");
+    it('should throw error with missing semicolon', async () => {
+        expectError('missing_semicolon.cmel', '[line 1] Error at end: Expect \';\' after value.');
     });
 
-    it("should assign to variables and read from them", async () => {
-        const {err, stdout, stderr} = await execRun("../cmel var_declarations.cmel");
-        assert.equal(stdout, "caramel fiona\n");
+    it('should assign to variables and read from them', async () => {
+        expect('var_declarations.cmel', 'caramel fiona');
+    });
+
+    describe('local_variables', async () => {
+        it('should introduce local variables at each scope with parent scopes visible', async () => {
+            expect('local_variables/scopes.cmel', '3');
+        });
+
+        it('should throw error when redefining an existing local variable', async () => {
+            expectError('local_variables/duplicate_locals.cmel', '[line 3] Error at \'a\': Already a variable with this name in this scope.');
+        });
+
+        it('should throw error when defining a variable in terms of itself', async () => {
+            expectError('local_variables/define_variable_with_itself.cmel', '[line 2] Error at \'a\': Can\'t read local variable in its own initializer.')
+        });
     });
 });
