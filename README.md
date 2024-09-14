@@ -3,6 +3,13 @@
 Cmel (see-mel) is short for Caramel, the name of my cat.
 It's my implementation of Lox from [Crafting Interpreters](https://www.craftinginterpreters.com) by Robert Nystrom.
 
+## Features
+
+Here are the features which separate `Cmel` from `Lox`.
+
+- Support from 2^24 constant values in a script
+- Local `const` values
+
 ## Usage
 
 Compile the project using
@@ -35,6 +42,7 @@ node --test
 
 ### Language Features
 
+- [ ] Widen `const` to work for global variables
 - [ ] Arrays/Lists
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator

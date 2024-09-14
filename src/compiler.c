@@ -42,6 +42,7 @@ typedef struct {
 typedef struct {
     Token name;
     int depth;
+    bool isConst;
 } Local;
 
 typedef struct {
@@ -238,6 +239,10 @@ static void namedVariable(Token name, bool canAssign) {
     }
 
     if (canAssign && match(TOKEN_EQUAL)) {
+        if (arg != -1 && current->locals[arg].isConst) {
+            error("Cannot assign a value to a const.");
+            return;
+        }
         expression();
         emitBytes(setOp, (uint8_t)arg);
     } else {
@@ -299,6 +304,7 @@ ParseRule rules[] = {
   [TOKEN_THIS]          = {NULL,     NULL,   PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_CONST]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
@@ -349,7 +355,7 @@ static int resolveLocal(Compiler* compiler, Token* name) {
     return -1;
 }
 
-static void addLocal(Token name) {
+static void addLocal(Token name, bool isConst) {
     if (current->localCount == UINT8_COUNT) {
         error("Too many local variables in function.");
         return;
@@ -358,9 +364,10 @@ static void addLocal(Token name) {
     Local* local = &current->locals[current->localCount++];
     local->name = name;
     local->depth = -1;
+    local->isConst = isConst;
 }
 
-static void declareVariable() {
+static void declareVariable(bool isConst) {
     if (current->scopeDepth == 0) return;
 
     Token* name = &parser.previous;
@@ -374,13 +381,13 @@ static void declareVariable() {
             error("Already a variable with this name in this scope.");
         }
     }
-    addLocal(*name);
+    addLocal(*name, isConst);
 }
 
-static uint8_t parseVariable(const char* errorMessage) {
+static uint8_t parseVariable(const char* errorMessage, bool isConst) {
     consume(TOKEN_IDENTIFIER, errorMessage);
 
-    declareVariable();
+    declareVariable(isConst);
     if (current->scopeDepth > 0) return 0;
 
     return identiferConstant(&parser.previous);
@@ -415,8 +422,8 @@ static void block() {
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after block.");
 }
 
-static void varDeclaration() {
-    uint8_t global = parseVariable("Expect variable name.");
+static void varDeclaration(bool isConst) {
+    uint8_t global = parseVariable("Expect variable name.", isConst);
 
     if (match(TOKEN_EQUAL)) {
         expression();
@@ -466,7 +473,12 @@ static void synchronize() {
 
 static void declaration() {
     if (match(TOKEN_VAR)) {
-        varDeclaration();
+        varDeclaration(false);
+    } else if (match(TOKEN_CONST)) {
+        if (current->scopeDepth == 0) {
+            error("Cannot define a global const.");
+        }
+        varDeclaration(true);
     } else {
         statement();
     }
