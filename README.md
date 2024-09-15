@@ -46,6 +46,7 @@ node --test
 - [ ] Arrays/Lists
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator
+- [ ] Modulo Operator
 - [ ] String Escape Characters
 - [ ] String interpolation
 - [ ] Implicit convert to string on all types for concatenation
@@ -53,6 +54,9 @@ node --test
 - [ ] Anonymous Functions
 - [ ] Modules
 - [ ] User facing Hash Tables (Including non-string keys)
+- [ ] Continue Statement
+- [ ] Break Statement
+- [ ] Switch Statement
 
 ### Tooling
 

@@ -67,4 +67,16 @@ describe('cmel', async () => {
             expect('logical_operators/or.cmel', 'yay');
         });
     });
+
+    describe('for', async () => {
+        it('should execute initializer, condition, and increment', async () => {
+            expect('for/for.cmel', '8');
+        });
+    });
+
+    describe('while', async () => {
+        it('should reproduce for functionality', async () => {
+            expect('while/while.cmel', '5')
+        });
+    })
 });
