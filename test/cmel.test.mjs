@@ -57,4 +57,14 @@ describe('cmel', async () => {
             expect('if/do_else.cmel', 'x is 10');
         });
     });
+
+    describe('logical_operators', async () => {
+        it('should perform and expression', async () => {
+            expect('logical_operators/and.cmel', 'yay');
+        });
+
+        it('should perform or expression', async () => {
+            expect('logical_operators/or.cmel', 'yay');
+        });
+    });
 });
