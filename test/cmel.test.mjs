@@ -47,4 +47,14 @@ describe('cmel', async () => {
             expectError('local_variables/define_variable_with_itself.cmel', '[line 2] Error at \'a\': Can\'t read local variable in its own initializer.')
         });
     });
+
+    describe('if', async () => {
+        it('should do if block and jump over else', async () => {
+            expect('if/do_if.cmel', 'x is 10');
+        });
+
+        it('should do if block and jump over else', async () => {
+            expect('if/do_else.cmel', 'x is 10');
+        });
+    });
 });
