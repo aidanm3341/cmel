@@ -1,0 +1,15 @@
+var i = 0;
+
+while (i < 10) {
+    var j = 0;  
+
+    while (j < 10) {
+        if (i == 1 or i == 3 or i == 5 or i == 7 or i == 9) break;
+        if (i == j) print i;  
+
+        j = j + 1;
+    }
+
+    i = i + 1;
+}
+print "end";

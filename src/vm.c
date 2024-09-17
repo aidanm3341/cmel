@@ -210,6 +210,10 @@ static InterpretResult run() {
             case OP_RETURN: {
                 return INTERPRET_OK;
             }
+            case OP_PLACEHOLDER: {
+                runtimeError("Placeholder instruction encountered. This must be a bug in the compiler.");
+                break;
+            }
         }
     }
 

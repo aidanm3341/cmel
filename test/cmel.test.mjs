@@ -78,5 +78,19 @@ describe('cmel', async () => {
         it('should reproduce for functionality', async () => {
             expect('while/while.cmel', '5')
         });
-    })
+    });
+
+    describe('break', async () => {
+        it('should break from a while loop', async () => {
+            expect('break/while.cmel', '0\n1\n2\nend');
+        });
+
+        it('should break from an inner while loop', async () => {
+            expect('break/nested_while.cmel', '0\n2\n4\n6\n8\nend');
+        });
+
+        it('should break from an inner while loop', async () => {
+            expectError('break/break_outside_loop.cmel', '[line 1] Error at \'break\': Cannot use \'break\' outside of a loop.');
+        });
+    });
 });

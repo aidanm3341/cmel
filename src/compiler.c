@@ -55,6 +55,9 @@ Parser parser;
 Compiler* current = NULL;
 Chunk* compilingChunk;
 
+int innerLoopEnd = -1;
+int innerLoopScopeDepth = 0;
+
 static Chunk* currentChunk() {
     return compilingChunk;
 }
@@ -352,6 +355,7 @@ ParseRule rules[] = {
   [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SUPER]         = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_BREAK]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_THIS]          = {NULL,     NULL,   PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
@@ -561,10 +565,69 @@ static void printStatement() {
     emitByte(OP_PRINT);
 }
 
+static int getByteCountForArguments(const uint8_t* code, const int ip) {
+    switch (code[ip]) {
+        case OP_ADD:
+        case OP_SUBTRACT:
+        case OP_MULTIPLY:
+        case OP_DIVIDE:
+        case OP_NOT:
+        case OP_NEGATE:
+        case OP_NIL:
+        case OP_TRUE:
+        case OP_FALSE:
+        case OP_POP:
+        case OP_EQUAL:
+        case OP_GREATER:
+        case OP_LESS:
+        case OP_PRINT:
+        case OP_RETURN:
+        case OP_PLACEHOLDER:
+            return 0;
+
+        case OP_CONSTANT:
+        case OP_GET_LOCAL:
+        case OP_SET_LOCAL:
+        case OP_GET_GLOBAL:
+        case OP_DEFINE_GLOBAL:
+        case OP_SET_GLOBAL:
+            return 1;
+
+        case OP_JUMP:
+        case OP_JUMP_IF_FALSE:
+        case OP_LOOP:
+            return 2;
+
+        case OP_CONSTANT_LONG:
+            return 3;
+
+        default:
+            return 0; // unreachable
+    }
+}
+
+static void patchBreaksInCurrentLoop() {
+    for (int i = innerLoopEnd; i >= 0;) {
+        if (currentChunk()->code[i] == OP_PLACEHOLDER) {
+            currentChunk()->code[i] = OP_JUMP;
+            patchJump(i + 1);
+            i -= 3;
+        } else {
+            i -= getByteCountForArguments(currentChunk()->code, i) + 1;
+        }
+    }
+}
+
 static void whileStatement() {
+    beginScope();
     int loopStart = currentChunk()->count;
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
     expression();
+
+    int surroundingLoopEnd = innerLoopEnd;
+    int surroundingLoopScopeDepth = innerLoopScopeDepth;
+    innerLoopScopeDepth = current->scopeDepth;
+
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
     int exitJump = emitJump(OP_JUMP_IF_FALSE);
@@ -573,7 +636,30 @@ static void whileStatement() {
     emitLoop(loopStart);
 
     patchJump(exitJump);
+    innerLoopEnd = currentChunk()->count;
     emitByte(OP_POP);
+
+    patchBreaksInCurrentLoop();
+
+    innerLoopEnd = surroundingLoopEnd;
+    innerLoopScopeDepth = surroundingLoopScopeDepth;
+
+    endScope();
+}
+
+static void breakStatement() {
+    if (innerLoopScopeDepth <= 0) {
+        error("Cannot use 'break' outside of a loop.");
+    }
+
+    consume(TOKEN_SEMICOLON, "Expect ';' after 'break'.");
+
+    // Discard any locals created inside this loop.
+    for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > innerLoopScopeDepth; i--) {
+        emitByte(OP_POP);
+    }
+
+    emitJump(OP_PLACEHOLDER);
 }
 
 static void synchronize() {
@@ -624,6 +710,8 @@ static void statement() {
         whileStatement();
     } else if (match(TOKEN_FOR)) {
         forStatement();
+    } else if (match(TOKEN_BREAK)) {
+        breakStatement();
     } else if (match(TOKEN_LEFT_BRACE)) {
         beginScope();
         block();
