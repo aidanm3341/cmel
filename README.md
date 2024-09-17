@@ -55,7 +55,7 @@ node --test
 - [ ] Modules
 - [ ] User facing Hash Tables (Including non-string keys)
 - [ ] Continue Statement
-- [ ] Break Statement
+- [x] Break Statement
 - [ ] Switch Statement
 
 ### Tooling

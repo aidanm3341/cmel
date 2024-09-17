@@ -1,0 +1,7 @@
+for (var i=0; i<10; i = i+1) {
+    for (var j=0; j<10; j = j+1) {
+        if (i == 1 or i == 3 or i == 5 or i == 7 or i == 9) break;
+        if (i == j) print i;  
+    }
+}
+print "end";
