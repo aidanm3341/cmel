@@ -14,7 +14,11 @@
       "id": "cmel",
       "aliases": ["Cmel", "cmel"],
       "extensions": [".cmel"],
-      "configuration": "./language-configuration.json"
+      "configuration": "./language-configuration.json",
+      "icon": {
+        "dark": "cat-logo.png",
+        "light": "cat-logo.png"
+      }
     }],
     "grammars": [{
       "language": "cmel",
