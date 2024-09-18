@@ -1,0 +1,25 @@
+{
+  "name": "cmel-language",
+  "displayName": "Cmel Language",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "cmel",
+      "aliases": ["Cmel", "cmel"],
+      "extensions": [".cmel"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "cmel",
+      "scopeName": "source.cmel",
+      "path": "./syntaxes/cmel.tmLanguage.json"
+    }]
+  }
+}
