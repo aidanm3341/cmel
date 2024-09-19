@@ -9,6 +9,7 @@ Here are the features which separate `Cmel` from `Lox`.
 
 - Support from 2^24 constant values in a script
 - Local `const` values
+- Has a `break` statement to exit from loops early
 
 ## Usage
 
@@ -44,6 +45,7 @@ node --test
 
 - [ ] Widen `const` to work for global variables
 - [ ] Arrays/Lists
+- [ ] File Reading
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator
 - [ ] Modulo Operator
