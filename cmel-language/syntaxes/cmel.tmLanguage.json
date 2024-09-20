@@ -19,6 +19,10 @@
                 {
                     "name": "keyword.operator.cmel",
                     "match": "\\b(var|print|or|and)\\b"
+                },
+                {
+                    "name": "keyword.other.cmel",
+                    "match": "\\b(fun)\\b"
                 }
             ]
 		},

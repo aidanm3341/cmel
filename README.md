@@ -59,6 +59,7 @@ node --test
 - [ ] Continue Statement
 - [x] Break Statement
 - [ ] Switch Statement
+- [ ] Typeof operator
 
 ### Tooling
 
