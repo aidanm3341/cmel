@@ -1,0 +1,15 @@
+fun c() {
+    c("wrong!");
+}
+
+fun b() {
+    print "this is b!";
+    c();
+}
+
+fun a() {
+    print "this is a!";
+    b();
+}
+
+a();

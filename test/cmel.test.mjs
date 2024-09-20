@@ -1,8 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { exec } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 
+process.on('unhandledRejection', (reason, promise) => {
+    console.error(reason);
+    throw reason;
+  });
+  
 function execRun(cmd) {
     return new Promise((resolve, _reject) => {
         exec(cmd, (error, stdout, stderr) => {
@@ -99,6 +103,20 @@ describe('cmel', async () => {
 
         it('should break from an inner for loop', async () => {
             expect('break/nested_for.cmel', '0\n2\n4\n6\n8\nend');
+        });
+    });
+
+    describe('functions', async () => {
+        it('should declare variables and be able to print them', async () => {
+            expect('functions/function_declarations.cmel', '<fn myFirstFunction>');
+        });
+
+        it('should call functions', async () => {
+            expect('functions/function_calls.cmel', 'this is a!\nthis is b!');
+        });
+
+        it('should throw a meaningful stack trace', async () => {
+            expectError('functions/stack_trace.cmel', 'Expected 0 arguments but got 1.\n[line 2] in c\n[line 7] in b\n[line 12] in a\n[line 15] in script');
         });
     });
 });

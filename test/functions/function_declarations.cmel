@@ -2,7 +2,4 @@ fun myFirstFunction() {
     print "test";
 }
 
-fun anotherOne() {}
-
-print anotherOne;
 print myFirstFunction;

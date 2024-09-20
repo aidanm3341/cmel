@@ -240,6 +240,7 @@ static ParseRule* getRule(TokenType type);
 static uint8_t identiferConstant(Token* name);
 static void parsePrecedence(Precedence precedence);
 static int resolveLocal(Compiler* compiler, Token* name);
+static uint8_t argumentList();
 
 static void binary(bool canAssign) {
     TokenType operatorType = parser.previous.type;
@@ -259,6 +260,11 @@ static void binary(bool canAssign) {
         case TOKEN_SLASH: emitByte(OP_DIVIDE); break;
         default: return; //unreachable
     }
+}
+
+static void call(bool canAssign) {
+    uint8_t argCount = argumentList();
+    emitBytes(OP_CALL, argCount);
 }
 
 static void literal(bool canAssign) {
@@ -347,7 +353,7 @@ static void unary(bool canAssign) {
 }
 
 ParseRule rules[] = {
-  [TOKEN_LEFT_PAREN] = {grouping, NULL,   PREC_NONE},
+  [TOKEN_LEFT_PAREN] = {grouping, call,   PREC_CALL},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
@@ -488,6 +494,21 @@ static void defineVariable(uint8_t global) {
     emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
+static uint8_t argumentList() {
+    uint8_t argCount = 0;
+    if (!check(TOKEN_RIGHT_PAREN)) {
+        do {
+            expression();
+            if (argCount == 255) {
+                error("Can't have more than 255 arguments.");
+            }
+            argCount++;
+        } while (match(TOKEN_COMMA));
+    }
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+    return argCount;
+}
+
 static ParseRule* getRule(TokenType type) {
     return &rules[type];
 }
@@ -580,6 +601,7 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_GET_GLOBAL:
         case OP_DEFINE_GLOBAL:
         case OP_SET_GLOBAL:
+        case OP_CALL:
             return 1;
 
         case OP_JUMP:
