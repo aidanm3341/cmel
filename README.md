@@ -7,9 +7,11 @@ It's my implementation of Lox from [Crafting Interpreters](https://www.craftingi
 
 Here are the features which separate `Cmel` from `Lox`.
 
-- Support from 2^24 constant values in a script
+- Support for 2^24 constant values in a script
 - Local `const` values
 - Has a `break` statement to exit from loops early
+- Built-ins
+  - `input()` to get a string from stdin
 
 ## Usage
 

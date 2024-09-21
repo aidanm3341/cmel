@@ -8,10 +8,13 @@
 #include "debug.h"
 #include "object.h"
 #include "memory.h"
-#include "natives.h"
 #include "vm.h"
 
 VM vm;
+
+static Value clockNative(int argCount, Value* args) {
+    return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
 
 static void resetStack() {
     vm.stackTop = vm.stack;
@@ -39,6 +42,17 @@ static void runtimeError(const char* format, ...) {
     resetStack();
 }
 
+static Value inputNative(int argCount, Value* args) {
+    char input[256];
+    fgets(input, sizeof(input), stdin);
+
+    if (strlen(input) >= sizeof(input) - 1) {
+        runtimeError("Input cannot be longer than 256 characters.");
+        return NIL_VAL;
+    }
+    return OBJ_VAL(copyString(input, strlen(input) - 1));
+}
+
 static void defineNative(const char* name, NativeFn function, int arity) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function, arity)));
@@ -55,6 +69,7 @@ void initVM() {
     initTable(&vm.strings);
 
     defineNative("clock", clockNative, 0);
+    defineNative("input", inputNative, 0);
 }
 
 void freeVM() {
