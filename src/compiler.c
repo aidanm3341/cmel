@@ -547,7 +547,7 @@ static void function(FunctionType type) {
     block();
 
     ObjFunction* function = endCompiler();
-    emitConstant(OBJ_VAL(function));
+    emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 }
 
 static void funDeclaration() {
@@ -603,6 +603,7 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_DEFINE_GLOBAL:
         case OP_SET_GLOBAL:
         case OP_CALL:
+        case OP_CLOSURE:
             return 1;
 
         case OP_JUMP:
