@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -53,6 +54,42 @@ static Value inputNative(int argCount, Value* args) {
     return OBJ_VAL(copyString(input, strlen(input) - 1));
 }
 
+static Value readFileNative(int argCount, Value* args) {
+    Value pathVal = *args;
+    if (!IS_STRING(pathVal)) {
+        runtimeError("Argument must be a string.");
+        return NIL_VAL;
+    }
+    char* path = AS_STRING(pathVal)->chars;
+
+    FILE* file = fopen(path, "rb");
+    if (file == NULL) {
+        runtimeError("Could not open file \"%s\".\n", path);
+        return NIL_VAL;
+    }
+
+    fseek(file, 0L, SEEK_END);
+    size_t fileSize = ftell(file);
+    rewind(file);
+
+    char* buffer = (char*)malloc(fileSize + 1);
+    if (buffer == NULL) {
+        runtimeError("Not enough memory to read \"%s\".\n", path);
+        return NIL_VAL;
+    }
+
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
+    if (bytesRead < fileSize) {
+        runtimeError("Could not read file \"%s\".\n", path);
+        return NIL_VAL;
+    }
+
+    buffer[bytesRead] = '\0';
+
+    fclose(file);
+    return OBJ_VAL(copyString(buffer, fileSize));
+}
+
 static void defineNative(const char* name, NativeFn function, int arity) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function, arity)));
@@ -70,6 +107,7 @@ void initVM() {
 
     defineNative("clock", clockNative, 0);
     defineNative("input", inputNative, 0);
+    defineNative("readFile", readFileNative, 1);
 }
 
 void freeVM() {

@@ -12,6 +12,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Has a `break` statement to exit from loops early
 - Built-ins
   - `input()` to get a string from stdin
+  - `readFile()` to read a file from the file system
 
 ## Usage
 
