@@ -14,7 +14,7 @@
 			"patterns": [
                 {
                     "name": "keyword.control.cmel",
-                    "match": "\\b(if|while|for|return|break)\\b"
+                    "match": "\\b(if|else|while|for|return|break)\\b"
                 },
                 {
                     "name": "keyword.operator.cmel",

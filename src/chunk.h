@@ -33,6 +33,7 @@ typedef enum {
     OP_LOOP,
     OP_CALL,
     OP_CLOSURE,
+    OP_CLOSE_UPVALUE,
     OP_RETURN,
     OP_PLACEHOLDER // Should never exist at runtime, this is used only by the compiler and should be removed before runtime.
 } OpCode;
