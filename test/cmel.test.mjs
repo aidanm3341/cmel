@@ -119,4 +119,14 @@ describe('cmel', async () => {
             expectError('functions/stack_trace.cmel', 'Expected 0 arguments but got 1.\n[line 2] in c\n[line 7] in b\n[line 12] in a\n[line 15] in script');
         });
     });
+
+    describe('closures', async () => {
+        it('should capture enclosing functions variable', async () => {
+            expect('closures/closure.cmel', 'outer');
+        });
+
+        it('should break out of a loop in a closure', async () => {
+            expect('closures/break.cmel', 'outer');
+        });
+    });
 });
