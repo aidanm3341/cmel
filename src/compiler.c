@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "compiler.h"
+#include "memory.h"
 #include "scanner.h"
 
 #ifdef DEBUG_PRINT_CODE
@@ -691,13 +692,13 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
 }
 
 static void patchBreaksInCurrentLoop() {
-    for (int i = innerLoopEnd; i >= 0;) {
+    for (int i = 0; i < innerLoopEnd;) {
         if (currentChunk()->code[i] == OP_PLACEHOLDER) {
             currentChunk()->code[i] = OP_JUMP;
             patchJump(i + 1);
-            i -= 3;
+            i += 3;
         } else {
-            i -= getByteCountForArguments(currentChunk()->code, i) + 1;
+            i += getByteCountForArguments(currentChunk()->code, i) + 1;
         }
     }
 }
@@ -918,4 +919,12 @@ ObjFunction* compile(const char* source) {
 
     ObjFunction* function = endCompiler();
     return parser.hadError ? NULL : function;
+}
+
+void markCompilerRoots() {
+    Compiler* compiler = current;
+    while (compiler != NULL) {
+        markObject((Obj*)compiler->function);
+        compiler = compiler->enclosing;
+    }
 }

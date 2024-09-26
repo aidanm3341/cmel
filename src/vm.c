@@ -102,6 +102,12 @@ static void defineNative(const char* name, NativeFn function, int arity) {
 void initVM() {
     resetStack();
     vm.objects = NULL;
+    vm.bytesAllocated = 0;
+    vm.nextGC = 1024 * 1024;
+
+    vm.grayCount = 0;
+    vm.grayCapacity = 0;
+    vm.grayStack = NULL;
 
     initTable(&vm.globals);
     initTable(&vm.strings);
@@ -210,8 +216,8 @@ static bool isFalsey(Value value) {
 }
 
 static void concatenate() {
-    ObjString* b = AS_STRING(pop());
-    ObjString* a = AS_STRING(pop());
+    ObjString* b = AS_STRING(peek(0));
+    ObjString* a = AS_STRING(peek(1));
 
     int length = a->length + b->length;
     char* chars = ALLOCATE(char, length + 1);
@@ -220,6 +226,8 @@ static void concatenate() {
     chars[length] = '\0';
 
     ObjString* result = takeString(chars, length);
+    pop();
+    pop();
     push(OBJ_VAL(result));
 }
 
@@ -251,7 +259,7 @@ static InterpretResult run() {
             printf(" ]");
         }
         printf("\n");
-        disassembleInstruction(&frame->closure->function->chunk, (int)(frame->ip - frame->closure->function->chunk->code));
+        disassembleInstruction(&frame->closure->function->chunk, (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
 
         uint8_t instruction;
