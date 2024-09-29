@@ -63,6 +63,7 @@ node --test
 - [x] Break Statement
 - [ ] Switch Statement
 - [ ] Typeof operator
+- [ ] toString method on instances
 
 ### Tooling
 

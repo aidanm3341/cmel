@@ -129,4 +129,14 @@ describe('cmel', async () => {
             await expect('closures/break.cmel', 'outer');
         });
     });
+
+    describe('classes', async () => {
+        it('should create a declaration of a class', async () => {
+            await expect('classes/class.cmel', 'Saturn');
+        });
+
+        it('should create an instance of a class', async () => {
+            await expect('classes/instance.cmel', 'Saturn instance');
+        });
+    });
 });
