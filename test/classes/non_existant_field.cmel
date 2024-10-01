@@ -1,0 +1,5 @@
+class Planet {}
+
+var saturn = Planet();
+
+print saturn.gravity;

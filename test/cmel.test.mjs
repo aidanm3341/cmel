@@ -138,5 +138,13 @@ describe('cmel', async () => {
         it('should create an instance of a class', async () => {
             await expect('classes/instance.cmel', 'Saturn instance');
         });
+
+        it('should set and access a field on a class', async () => {
+            await expect('classes/fields.cmel', '6');
+        });
+
+        it('should not access a non-existant field on a class', async () => {
+            await expectError('classes/non_existant_field.cmel', 'Undefined property \'gravity\'.\n[line 5] in script');
+        });
     });
 });

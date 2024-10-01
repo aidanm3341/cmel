@@ -22,7 +22,7 @@
                 },
                 {
                     "name": "keyword.other.cmel",
-                    "match": "\\b(fun)\\b"
+                    "match": "\\b(fun|class)\\b"
                 }
             ]
 		},

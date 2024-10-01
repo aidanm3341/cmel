@@ -284,6 +284,18 @@ static void call(bool canAssign) {
     emitBytes(OP_CALL, argCount);
 }
 
+static void dot(bool canAssign) {
+    consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
+    uint8_t name = identiferConstant(&parser.previous);
+
+    if (canAssign && match(TOKEN_EQUAL)) {
+        expression();
+        emitBytes(OP_SET_PROPERTY, name);
+    } else {
+        emitBytes(OP_GET_PROPERTY, name);
+    }
+}
+
 static void literal(bool canAssign) {
     switch (parser.previous.type) {
         case TOKEN_FALSE: emitByte(OP_FALSE); break;
@@ -378,7 +390,7 @@ ParseRule rules[] = {
   [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_DOT]           = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
   [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
   [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
@@ -679,6 +691,8 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_SET_GLOBAL:
         case OP_GET_UPVALUE:
         case OP_SET_UPVALUE:
+        case OP_GET_PROPERTY:
+        case OP_SET_PROPERTY:
         case OP_CALL:
         case OP_CLASS:
             return 1;
