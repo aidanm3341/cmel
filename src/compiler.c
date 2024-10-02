@@ -310,6 +310,10 @@ static void dot(bool canAssign) {
     if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
+    } else if (match(TOKEN_LEFT_PAREN)) {
+        uint8_t argCount = argumentList();
+        emitBytes(OP_INVOKE, name);
+        emitByte(argCount);
     } else {
         emitBytes(OP_GET_PROPERTY, name);
     }
@@ -750,6 +754,7 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_METHOD:
             return 1;
 
+        case OP_INVOKE:
         case OP_JUMP:
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
