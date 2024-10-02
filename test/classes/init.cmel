@@ -1,0 +1,14 @@
+class Planet {
+    init(color) {
+        this.color = color;
+    }
+
+    describe() {
+        print "This planet is " + this.color;
+    }
+}
+
+var mars = Planet("red");
+var neptune = Planet("blue");
+mars.describe();
+neptune.describe();

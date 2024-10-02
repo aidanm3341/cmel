@@ -48,7 +48,7 @@ node --test
 
 - [ ] Widen `const` to work for global variables
 - [ ] Arrays/Lists
-- [ ] File Reading
+- [x] File Reading
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator
 - [ ] Modulo Operator
@@ -67,9 +67,9 @@ node --test
 
 ### Tooling
 
-- [ ] Syntax Highlighter
+- [x] Syntax Highlighter
 - [ ] Language Server
-- [ ] Test Runner
+- [x] Test Runner
 
 ### Misc
 
