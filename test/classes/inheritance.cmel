@@ -1,0 +1,17 @@
+class Planet {
+    description() {
+        return "This planet's color is " + this.color;
+    }
+}
+
+class Mars < Planet {
+    init() {
+        this.color = "red";
+    }
+
+    description() {
+        return super.description() + " because it has iron in its soil!";
+    }
+}
+
+print Mars().description();

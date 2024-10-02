@@ -146,5 +146,9 @@ describe('cmel', async () => {
         it('should not access a non-existant field on a class', async () => {
             await expectError('classes/non_existant_field.cmel', 'Undefined property \'gravity\'.\n[line 5] in script');
         });
+
+        it('should inherit from a superclass and call its methods', async () => {
+            await expect('classes/inheritance.cmel', 'This planet\'s color is red because it has iron in its soil!');
+        });
     });
 });
