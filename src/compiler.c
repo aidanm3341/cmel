@@ -415,8 +415,15 @@ static void super_(bool canAssign) {
     uint8_t name = identiferConstant(&parser.previous);
 
     namedVariable(syntheticToken("this"), false);
-    namedVariable(syntheticToken("super"), false);
-    emitBytes(OP_GET_SUPER, name);
+    if (match(TOKEN_LEFT_PAREN)) {
+        uint8_t argCount = argumentList();
+        namedVariable(syntheticToken("super"), false);
+        emitBytes(OP_SUPER_INVOKE, name);
+        emitByte(argCount);
+    } else {
+        namedVariable(syntheticToken("super"), false);
+        emitBytes(OP_GET_SUPER, name);
+    }
 }
 
 static void this_(bool canAssign) {
@@ -806,6 +813,7 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_JUMP:
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
+        case OP_SUPER_INVOKE:
             return 2;
 
         case OP_CONSTANT_LONG:
