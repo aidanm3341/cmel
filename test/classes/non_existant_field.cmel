@@ -3,3 +3,4 @@ class Planet {}
 var saturn = Planet();
 
 print saturn.gravity;
+// expect error: Undefined property 'gravity'.\n[line 5] in script

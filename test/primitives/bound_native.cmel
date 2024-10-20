@@ -1,2 +1,3 @@
 var venusLength = "Venus".length;
 print venusLength();
+// expect: 5

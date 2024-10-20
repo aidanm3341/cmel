@@ -8,3 +8,4 @@ fun a() {
 }
 
 a();
+// expect: this is a!\nthis is b!

@@ -1,0 +1,2 @@
+print "Pluto".length();
+// expect: 5

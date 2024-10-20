@@ -4,3 +4,4 @@ var saturn = Planet();
 saturn.gravity = 6;
 
 print saturn.gravity;
+// expect: 6

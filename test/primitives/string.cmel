@@ -1,0 +1,3 @@
+var planet = "Jupiter";
+print planet.length();
+// expect: 7

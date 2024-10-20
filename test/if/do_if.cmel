@@ -4,3 +4,4 @@ if (x == 10) {
 } else {
     print "unreachable!";
 }
+// expect: x is 10

@@ -13,3 +13,4 @@ fun a() {
 }
 
 a();
+// expect error: Expected 0 arguments but got 1.\n[line 2] in c\n[line 7] in b\n[line 12] in a\n[line 15] in script

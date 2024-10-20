@@ -15,3 +15,4 @@ class Mars < Planet {
 }
 
 print Mars().description();
+// expect: This planet's color is red because it has iron in its soil!

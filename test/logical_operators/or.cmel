@@ -1,3 +1,4 @@
 if (1 == 2 or 2 == 2) {
     print "yay";
 }
+// expect: yay

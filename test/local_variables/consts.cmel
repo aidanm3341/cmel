@@ -2,3 +2,4 @@
     const x = 123;
     x = 789;
 }
+// expect error: [line 3] Error at '=': Cannot assign a value to a const.

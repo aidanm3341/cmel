@@ -5,3 +5,4 @@ while (i <= 10) {
     i = i + 1;
 }
 print "end";
+// expect: 0\n1\n2\nend

@@ -4,3 +4,4 @@ if (x != 10) {
 } else {
     print "x is 10";
 }
+// expect: x is 10

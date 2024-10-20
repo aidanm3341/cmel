@@ -2,3 +2,4 @@ var fiona = "caramel";
 var caramel = "fiona";
 
 print fiona + " " + caramel;
+// expect: caramel fiona

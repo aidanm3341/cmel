@@ -3,3 +3,4 @@ fun myFirstFunction() {
 }
 
 print myFirstFunction;
+// expect: <fn myFirstFunction>

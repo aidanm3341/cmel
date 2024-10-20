@@ -1,1 +1,2 @@
 print 1 + 1
+// expect error: [line 2] Error at end: Expect ';' after value.

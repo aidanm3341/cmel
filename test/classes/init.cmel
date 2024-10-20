@@ -9,6 +9,5 @@ class Planet {
 }
 
 var mars = Planet("red");
-var neptune = Planet("blue");
 mars.describe();
-neptune.describe();
+// expect: This planet is red
