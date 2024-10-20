@@ -31,6 +31,13 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
     return bound;
 }
 
+ObjBoundNative* newBoundNative(Value receiver, ObjNative* native) {
+    ObjBoundNative* bound = ALLOCATE_OBJ(ObjBoundNative, OBJ_BOUND_NATIVE);
+    bound->receiver = receiver;
+    bound->native = native;
+    return bound;
+}
+
 ObjClass* newClass(ObjString* name) {
     ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name = name;
@@ -138,6 +145,10 @@ void printObject(Value value) {
     switch (OBJ_TYPE(value)) {
         case OBJ_BOUND_METHOD: {
             printFunction(AS_BOUND_METHOD(value)->method->function);
+            break;
+        }
+        case OBJ_BOUND_NATIVE: {
+            printf("<native method>");
             break;
         }
         case OBJ_CLASS: {

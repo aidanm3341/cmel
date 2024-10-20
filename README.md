@@ -13,6 +13,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Built-ins
   - `input()` to get a string from stdin
   - `readFile()` to read a file from the file system
+- Primitive methods (e.g. `"string".length()`)
 
 ## Usage
 

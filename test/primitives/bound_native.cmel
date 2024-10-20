@@ -1,0 +1,2 @@
+var venusLength = "Venus".length;
+print venusLength();

@@ -25,6 +25,9 @@ typedef struct {
     ObjString* initString;
     ObjUpvalue* openUpvalues;
 
+    ObjClass* stringClass;
+    ObjClass* numberClass;
+
     size_t bytesAllocated;
     size_t nextGC;
     Obj* objects;

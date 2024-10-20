@@ -91,10 +91,26 @@ static Value readFileNative(int argCount, Value* args) {
     return OBJ_VAL(copyString(buffer, fileSize));
 }
 
+static Value lengthNative(int argCount, Value* args) {
+    return NUMBER_VAL(AS_STRING(*args)->length);
+}
+
+static Value addNative(int argCount, Value* args) {
+    return NUMBER_VAL(AS_NUMBER(args[0]) + AS_NUMBER(args[1]));
+}
+
 static void defineNative(const char* name, NativeFn function, int arity) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function, arity)));
     tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+    pop();
+    pop();
+}
+
+static void definePrimitive(ObjClass* klass, const char* name, NativeFn function, int arity) {
+    push(OBJ_VAL(copyString(name, (int)strlen(name))));
+    push(OBJ_VAL(newNative(function, arity)));
+    tableSet(&klass->methods, AS_STRING(vm.stack[0]), vm.stack[1]);
     pop();
     pop();
 }
@@ -115,14 +131,23 @@ void initVM() {
     vm.initString = NULL;
     vm.initString = copyString("init", 4);
 
+
     defineNative("clock", clockNative, 0);
     defineNative("input", inputNative, 0);
     defineNative("readFile", readFileNative, 1);
+
+    vm.stringClass = newClass(copyString("String", 6));
+    definePrimitive(vm.stringClass, "length", lengthNative, 1);
+
+    vm.numberClass = newClass(copyString("Number", 6));
+    definePrimitive(vm.numberClass, "add", addNative, 2);
 }
 
 void freeVM() {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
+    vm.stringClass = NULL;
+    vm.numberClass = NULL;
     vm.initString = NULL;
     freeObjects();
 }
@@ -167,6 +192,20 @@ static bool callValue(Value callee, int argCount) {
                 vm.stackTop[-argCount - 1] = bound->receiver;
                 return call(bound->method, argCount);
             }
+            case OBJ_BOUND_NATIVE: {
+                ObjBoundNative* bound = AS_BOUND_NATIVE(callee);
+                argCount += 1; // because we pass in the "instance" as well
+                if (argCount != bound->native->arity) {
+                    runtimeError("Expected %d arguments but got %d", bound->native->arity, argCount);
+                    return false;
+                }
+                push(bound->receiver);
+                NativeFn native = bound->native->function;
+                Value result = native(argCount, vm.stackTop - argCount);
+                vm.stackTop -= argCount + 1;
+                push(result);
+                return true;
+            }
             case OBJ_CLASS: {
                 ObjClass* klass = AS_CLASS(callee);
                 vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
@@ -208,23 +247,38 @@ static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
     return call(AS_CLOSURE(method), argCount);
 }
 
-static bool invoke(ObjString* name, int argCount) {
-    Value receiver = peek(argCount);
-
-    if (!IS_INSTANCE(receiver)) {
-        runtimeError("Only instances have methods.");
+static bool invokePrimitive(ObjClass* klass, Value receiver, ObjString* name, int argCount) {
+    Value method;
+    if (!tableGet(&klass->methods, name, &method)) {
+        runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
 
-    ObjInstance* instance = AS_INSTANCE(receiver);
+    push(receiver);
+    return callValue(method, argCount + 1);
+}
 
-    Value value;
-    if (tableGet(&instance->fields, name, &value)) {
-        vm.stackTop[-argCount - 1] = value;
-        return callValue(value, argCount);
+static bool invoke(ObjString* name, int argCount) {
+    Value receiver = peek(argCount);
+
+    if (IS_INSTANCE(receiver)) {
+        ObjInstance* instance = AS_INSTANCE(receiver);
+
+        Value value;
+        if (tableGet(&instance->fields, name, &value)) {
+            vm.stackTop[-argCount - 1] = value;
+            return callValue(value, argCount);
+        }
+
+        return invokeFromClass(instance->klass, name, argCount);
+    } else if (IS_STRING(receiver)) {
+        return invokePrimitive(vm.stringClass, receiver, name, argCount);
+    } else if (IS_NUMBER(receiver)) {
+        return invokePrimitive(vm.numberClass, receiver, name, argCount);
+    } else {
+        runtimeError("Undefined property '%s'.", name->chars);
+        return false;
     }
-
-    return invokeFromClass(instance->klass, name, argCount);
 }
 
 static bool bindMethod(ObjClass* klass, ObjString* name) {
@@ -235,6 +289,19 @@ static bool bindMethod(ObjClass* klass, ObjString* name) {
     }
 
     ObjBoundMethod* bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+    pop();
+    push(OBJ_VAL(bound));
+    return true;
+}
+
+static bool bindNative(ObjClass* klass, ObjString* name) {
+    Value method;
+    if (!tableGet(&klass->methods, name, &method)) {
+        runtimeError("Undefined property '%s'.", name->chars);
+        return false;
+    }
+
+    ObjBoundNative* bound = newBoundNative(peek(0), AS_NATIVE_OBJ(method));
     pop();
     push(OBJ_VAL(bound));
     return true;
@@ -330,7 +397,6 @@ static InterpretResult run() {
         printf("\n");
         disassembleInstruction(&frame->closure->function->chunk, (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
-
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
             case OP_ADD: {
@@ -423,25 +489,42 @@ static InterpretResult run() {
                 break;
             }
             case OP_GET_PROPERTY: {
-                if (!IS_INSTANCE(peek(0))) {
-                    runtimeError("Only instances have properties");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+                if (IS_INSTANCE(peek(0))) {
+                    ObjInstance* instance = AS_INSTANCE(peek(0));
+                    ObjString* name = READ_STRING();
 
-                ObjInstance* instance = AS_INSTANCE(peek(0));
-                ObjString* name = READ_STRING();
+                    Value value;
+                    if (tableGet(&instance->fields, name, &value)) {
+                        pop(); // the instance was evaluated at pushed to the stack, so we pop it off
+                        push(value);
+                        break;
+                    }
 
-                Value value;
-                if (tableGet(&instance->fields, name, &value)) {
-                    pop(); // the instance was evaluated at pushed to the stack, so we pop it off
-                    push(value);
+                    if (!bindMethod(instance->klass, name)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    break;
+                } else if (IS_STRING(peek(0))) {
+                    ObjString* name = READ_STRING();
+
+                    if (!bindNative(vm.stringClass, name)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    break;
+                } else if (IS_NUMBER(peek(0))) {
+                    ObjString* name = READ_STRING();
+
+                    if (!bindNative(vm.numberClass, name)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
                     break;
                 }
 
-                if (!bindMethod(instance->klass, name)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                break;
+                runtimeError("Only instances have properties");
+                return INTERPRET_RUNTIME_ERROR;
             }
             case OP_SET_PROPERTY: {
                 if (!IS_INSTANCE(peek(1))) {

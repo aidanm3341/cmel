@@ -8,6 +8,7 @@
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 
+#define IS_BOUND_NATIVE(value) isObjType(value, OBJ_BOUND_NATIVE)
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
 #define IS_CLASS(value) isObjType(value, OBJ_CLASS)
 #define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
@@ -16,17 +17,20 @@
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
 
+#define AS_BOUND_NATIVE(value) ((ObjBoundNative*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
 #define AS_CLOSURE(value) ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
+#define AS_NATIVE_OBJ(value) (((ObjNative*)AS_OBJ(value)))
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
 
 typedef enum {
     OBJ_BOUND_METHOD,
+    OBJ_BOUND_NATIVE,
     OBJ_CLASS,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
@@ -79,7 +83,7 @@ typedef struct {
     int upvalueCount;
 } ObjClosure;
 
-typedef struct {
+typedef struct ObjClass {
     Obj obj;
     ObjString* name;
     Table methods;
@@ -97,7 +101,14 @@ typedef struct {
     ObjClosure* method;
 } ObjBoundMethod;
 
+typedef struct {
+    Obj obj;
+    Value receiver;
+    ObjNative* native;
+} ObjBoundNative;
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
+ObjBoundNative* newBoundNative(Value receiver, ObjNative* native);
 ObjClass* newClass(ObjString* name);
 ObjClosure* newClosure(ObjFunction* function);
 ObjFunction* newFunction();
