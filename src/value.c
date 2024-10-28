@@ -40,6 +40,7 @@ void printValue(Value value) {
             break;
         }
         case VAL_OBJ: printObject(value); break;
+        case VAL_ERROR: printf("Error Value encountered."); break;
     }
 }
 

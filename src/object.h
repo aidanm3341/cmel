@@ -14,6 +14,7 @@
 #define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
+#define IS_LIST(value) isObjType(value, OBJ_LIST)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
 
@@ -23,6 +24,7 @@
 #define AS_CLOSURE(value) ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))
+#define AS_LIST(value) ((ObjList*)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
 #define AS_NATIVE_OBJ(value) (((ObjNative*)AS_OBJ(value)))
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
@@ -35,6 +37,7 @@ typedef enum {
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
+    OBJ_LIST,
     OBJ_NATIVE,
     OBJ_STRING,
     OBJ_UPVALUE
@@ -107,6 +110,13 @@ typedef struct {
     ObjNative* native;
 } ObjBoundNative;
 
+typedef struct {
+    Obj obj;
+    int count;
+    int capacity;
+    Value* items;
+} ObjList;
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 ObjBoundNative* newBoundNative(Value receiver, ObjNative* native);
 ObjClass* newClass(ObjString* name);
@@ -114,6 +124,12 @@ ObjClosure* newClosure(ObjFunction* function);
 ObjFunction* newFunction();
 ObjInstance* newInstance(ObjClass* klass);
 ObjNative* newNative(NativeFn function, int arity);
+ObjList* newList();
+void appendToList(ObjList* list, Value value);
+void storeToList(ObjList* list, int index, Value value);
+Value indexFromList(ObjList* list, int index);
+void deleteFromList(ObjList* list, int index);
+bool isValidListIndex(ObjList* list, int index);
 ObjString* takeString(char* chars, int length);
 ObjString* copyString(const char* chars, int length);
 ObjUpvalue* newUpvalue(Value* slot);

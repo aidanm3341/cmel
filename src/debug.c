@@ -23,6 +23,21 @@ static int byteInstruction(const char* name, Chunk* chunk, int offset) {
     return offset + 2;
 }
 
+static int twoByteInstruction(const char* name, Chunk* chunk, int offset) {
+    uint8_t slot1 = chunk->code[offset + 1];
+    uint8_t slot2 = chunk->code[offset + 2];
+    printf("%-16s %4d %4d\n", name, slot1, slot2);
+    return offset + 3;
+}
+
+static int threeByteInstruction(const char* name, Chunk* chunk, int offset) {
+    uint8_t slot1 = chunk->code[offset + 1];
+    uint8_t slot2 = chunk->code[offset + 2];
+    uint8_t slot3 = chunk->code[offset + 3];
+    printf("%-16s %4d %4d %4d\n", name, slot1, slot2, slot3);
+    return offset + 4;
+}
+
 static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset) {
     uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
     jump |= chunk->code[offset + 2];
@@ -119,6 +134,9 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_CLASS: return constantInstruction("OP_CLASS", chunk, offset);
         case OP_INHERIT: return simpleInstruction("OP_INHERIT", offset);
         case OP_METHOD: return constantInstruction("OP_METHOD", chunk, offset);
+        case OP_BUILD_LIST: return byteInstruction("OP_BUILD_LIST", chunk, offset);
+        case OP_INDEX: return twoByteInstruction("OP_INDEX", chunk, offset);
+        case OP_STORE: return threeByteInstruction("OP_STORE", chunk, offset);
         case OP_PLACEHOLDER: return simpleInstruction("OP_PLACEHOLDER", offset);
         default:
             printf("Unknown opcode %d\n", instruction);

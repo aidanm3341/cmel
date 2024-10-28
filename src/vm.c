@@ -95,8 +95,28 @@ static Value lengthNative(int argCount, Value* args) {
     return NUMBER_VAL(AS_STRING(*args)->length);
 }
 
-static Value addNative(int argCount, Value* args) {
+static Value addNumberNative(int argCount, Value* args) {
     return NUMBER_VAL(AS_NUMBER(args[0]) + AS_NUMBER(args[1]));
+}
+
+static Value addListNative(int argCount, Value* args) {
+    ObjList* list = AS_LIST(args[1]);
+    Value item = args[0];
+    appendToList(list, item);
+    return OBJ_VAL(list);
+}
+
+static Value removeListNative(int argCount, Value* args) {
+    ObjList* list = AS_LIST(args[1]);
+    int index = AS_NUMBER(args[0]);
+
+    if (!isValidListIndex(list, index)) {
+        runtimeError("Index out of bounds.");
+        return ERROR_VAL();
+    }
+
+    deleteFromList(list, index);
+    return OBJ_VAL(list);
 }
 
 static void defineNative(const char* name, NativeFn function, int arity) {
@@ -140,7 +160,11 @@ void initVM() {
     definePrimitive(vm.stringClass, "length", lengthNative, 1);
 
     vm.numberClass = newClass(copyString("Number", 6));
-    definePrimitive(vm.numberClass, "add", addNative, 2);
+    definePrimitive(vm.numberClass, "add", addNumberNative, 2);
+
+    vm.listClass = newClass(copyString("List", 4));
+    definePrimitive(vm.listClass, "add", addListNative, 2);
+    definePrimitive(vm.listClass, "remove", removeListNative, 2);
 }
 
 void freeVM() {
@@ -148,6 +172,7 @@ void freeVM() {
     freeTable(&vm.strings);
     vm.stringClass = NULL;
     vm.numberClass = NULL;
+    vm.listClass = NULL;
     vm.initString = NULL;
     freeObjects();
 }
@@ -228,6 +253,10 @@ static bool callValue(Value callee, int argCount) {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
                 vm.stackTop -= argCount + 1;
+                if (IS_ERROR(result)) {
+                    return false;
+                }
+
                 push(result);
                 return true;
             }
@@ -275,6 +304,8 @@ static bool invoke(ObjString* name, int argCount) {
         return invokePrimitive(vm.stringClass, receiver, name, argCount);
     } else if (IS_NUMBER(receiver)) {
         return invokePrimitive(vm.numberClass, receiver, name, argCount);
+    } else if (IS_LIST(receiver)) {
+        return invokePrimitive(vm.listClass, receiver, name, argCount);
     } else {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
@@ -521,6 +552,14 @@ static InterpretResult run() {
                     }
 
                     break;
+                } else if (IS_LIST(peek(0))) {
+                    ObjString* name = READ_STRING();
+
+                    if (!bindNative(vm.listClass, name)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    break;
                 }
 
                 runtimeError("Only instances have properties");
@@ -650,6 +689,77 @@ static InterpretResult run() {
             }
             case OP_METHOD: {
                 defineMethod(READ_STRING());
+                break;
+            }
+            case OP_BUILD_LIST: {
+                // e.g. stack before: [1, 2, 3, 4], stack after: [someList]
+                ObjList* list = newList();
+                uint8_t itemCount = READ_BYTE();
+
+                push(OBJ_VAL(list)); // to avoid accidental GCing
+                for (int i = itemCount; i > 0; i--) {
+                    appendToList(list, peek(i));
+                }
+                pop();
+
+                while (itemCount > 0) {
+                    pop();
+                    itemCount--;
+                }
+
+                push(OBJ_VAL(list));
+                break;
+            }
+            case OP_INDEX: {
+                Value indexVal = pop();
+                Value listVal = pop();
+                Value result;
+
+                if (!IS_LIST(listVal)) {
+                    runtimeError("Can only index into a list.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                ObjList* list = AS_LIST(listVal);
+
+                if (!IS_NUMBER(indexVal)) {
+                    runtimeError("Index value must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                int index = AS_NUMBER(indexVal);
+
+                if (!isValidListIndex(list, index)) {
+                    runtimeError("Index out of range.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                result = indexFromList(list, index);
+                push(result);
+                break;
+            }
+            case OP_STORE: {
+                Value item = pop();
+                Value indexVal = pop();
+                Value listVal = pop();
+
+                if (!IS_LIST(listVal)) {
+                    runtimeError("Can't store a value in a non-list.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                ObjList* list = AS_LIST(listVal);
+
+                if (!IS_NUMBER(indexVal)) {
+                    runtimeError("Index value must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                int index = AS_NUMBER(indexVal);
+
+                if (!isValidListIndex(list, index)) {
+                    runtimeError("Index out of range.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                storeToList(list, index, item);
+                push(item);
                 break;
             }
             case OP_PLACEHOLDER: {

@@ -1,0 +1,4 @@
+var planets = ["Earth", "Venus"];
+planets.remove(1);
+print planets;
+// expect: [Earth]

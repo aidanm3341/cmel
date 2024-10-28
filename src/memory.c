@@ -116,6 +116,13 @@ static void blackenObject(Obj* object) {
         case OBJ_NATIVE:
         case OBJ_STRING:
             break;
+        case OBJ_LIST: {
+            ObjList* list = (ObjList*)object;
+            for (int i = 0; i < list->count; i++) {
+                markValue(list->items[i]);
+            }
+            break;
+        }
     }
 }
 
@@ -171,6 +178,12 @@ static void freeObject(Obj* object) {
             FREE(ObjUpvalue, object);
             break;
         }
+        case OBJ_LIST: {
+            ObjList* list = (ObjList*)object;
+            FREE_ARRAY(Value*, list->items, list->count);
+            FREE(ObjList, object);
+            break;
+        }
     }
 }
 
@@ -192,6 +205,7 @@ static void markRoots() {
     markObject((Obj*)vm.initString);
     markObject((Obj*)vm.stringClass);
     markObject((Obj*)vm.numberClass);
+    markObject((Obj*)vm.listClass);
 }
 
 static void traceReferences() {

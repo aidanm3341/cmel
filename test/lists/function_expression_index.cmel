@@ -1,0 +1,8 @@
+var planets = ["Mars", "Neptune", "Pluto"];
+
+fun getIndex() {
+    return 1;
+}
+
+print planets[getIndex()];
+// expect: Neptune

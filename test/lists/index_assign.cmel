@@ -1,0 +1,4 @@
+var planets = ["Mars", "Jupiter", "Pluto"];
+planets[1] = "Uranus";
+print planets[1];
+// expect: Uranus

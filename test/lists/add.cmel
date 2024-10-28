@@ -1,0 +1,4 @@
+var planets = ["Earth", "Venus"];
+planets.add("Saturn");
+print planets;
+// expect: [Earth, Venus, Saturn]

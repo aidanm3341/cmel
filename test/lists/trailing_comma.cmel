@@ -1,0 +1,3 @@
+var planets = ["Mars", "Neptune", ];
+print planets[0];
+// expect: Mars

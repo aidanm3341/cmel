@@ -28,6 +28,7 @@ typedef enum {
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
     PREC_UNARY,       // ! -
+    PREC_SUBSCRIPT,   // []
     PREC_CALL,        // . ()
     PREC_PRIMARY
 } Precedence;
@@ -446,11 +447,48 @@ static void unary(bool canAssign) {
     }
 }
 
+static void list(bool canAssign) {
+    int itemCount = 0;
+    if (!check(TOKEN_RIGHT_BRACKET)) {
+        do {
+            if (check(TOKEN_RIGHT_BRACKET)) {
+                break; // trailing comma case
+            }
+
+            parsePrecedence(PREC_OR);
+
+            if (itemCount == UINT8_COUNT) {
+                error("Cannot have more than 256 items in a list literal.");
+            }
+            itemCount++;
+        } while (match(TOKEN_COMMA));
+    }
+
+    consume(TOKEN_RIGHT_BRACKET, "Expect ']' after list literal.");
+
+    emitByte(OP_BUILD_LIST);
+    emitByte(itemCount);
+}
+
+static void subscript(bool canAssign) {
+    parsePrecedence(PREC_OR);
+    consume(TOKEN_RIGHT_BRACKET, "Expect ']' after index.");
+
+    if (canAssign && match(TOKEN_EQUAL)) {
+        expression();
+        emitByte(OP_STORE);
+    } else {
+        emitByte(OP_INDEX);
+    }
+}
+
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN] = {grouping, call,   PREC_CALL},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_LEFT_BRACKET]  = {list,     subscript, PREC_SUBSCRIPT},
+  [TOKEN_RIGHT_BRACKET] = {NULL,     NULL,   PREC_NONE},
   [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
   [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
@@ -807,6 +845,7 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_CALL:
         case OP_CLASS:
         case OP_METHOD:
+        case OP_BUILD_LIST:
             return 1;
 
         case OP_INVOKE:
@@ -814,9 +853,11 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
         case OP_SUPER_INVOKE:
+        case OP_INDEX:
             return 2;
 
         case OP_CONSTANT_LONG:
+        case OP_STORE:
             return 3;
 
         case OP_CLOSURE: {

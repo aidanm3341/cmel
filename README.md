@@ -11,9 +11,26 @@ Here are the features which separate `Cmel` from `Lox`.
 - Local `const` values
 - Has a `break` statement to exit from loops early
 - Built-ins
-  - `input()` to get a string from stdin
-  - `readFile()` to read a file from the file system
 - Primitive methods (e.g. `"string".length()`)
+- Lists
+
+### Primitive Types
+
+- Nil
+- Boolean
+- String
+    - `length()` returns the number of characters in the string
+- Number
+    - `add(Number)` returns the number plus the passed number
+- List
+    - `add(value)` mutates the list by adding the given value and returns the same list
+    - `remove(index)` mutates the list by removing the value at the given index and returns the same list
+
+### Built-in Functions
+
+- `input()` gets and returns a value from stdin
+- `clock()` returns the current time since the program started in seconds
+- `readFile(path)` returns the content of the given path as a String
 
 ## Usage
 
@@ -48,7 +65,7 @@ node --test
 ### Language Features
 
 - [ ] Widen `const` to work for global variables
-- [ ] Arrays/Lists
+- [x] Arrays/Lists
 - [x] File Reading
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator

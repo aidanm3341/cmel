@@ -1,0 +1,3 @@
+var planets = ["Mars"];
+print planets["0"];
+// expect error: Index value must be a number.\n[line 2] in script

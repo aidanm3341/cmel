@@ -27,6 +27,7 @@ typedef struct {
 
     ObjClass* stringClass;
     ObjClass* numberClass;
+    ObjClass* listClass;
 
     size_t bytesAllocated;
     size_t nextGC;

@@ -1,0 +1,11 @@
+fun one() {
+    return "one";
+}
+
+fun two() {
+    return "two";
+}
+
+var funcs = [one, two];
+print funcs[0]();
+// expect: one
