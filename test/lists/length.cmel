@@ -1,0 +1,3 @@
+var planets = ["Neptune", "Mars", "Mercury"];
+print planets.length();
+// expect: 3

@@ -25,6 +25,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - List
     - `add(value)` mutates the list by adding the given value and returns the same list
     - `remove(index)` mutates the list by removing the value at the given index and returns the same list
+    - `length()` returns the length of the list
 
 ### Built-in Functions
 

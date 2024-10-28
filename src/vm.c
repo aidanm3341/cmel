@@ -119,6 +119,10 @@ static Value removeListNative(int argCount, Value* args) {
     return OBJ_VAL(list);
 }
 
+static Value listLengthNative(int argCount, Value* args) {
+    return NUMBER_VAL(AS_LIST(args[0])->count);
+}
+
 static void defineNative(const char* name, NativeFn function, int arity) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function, arity)));
@@ -165,6 +169,7 @@ void initVM() {
     vm.listClass = newClass(copyString("List", 4));
     definePrimitive(vm.listClass, "add", addListNative, 2);
     definePrimitive(vm.listClass, "remove", removeListNative, 2);
+    definePrimitive(vm.listClass, "length", listLengthNative, 1);
 }
 
 void freeVM() {
