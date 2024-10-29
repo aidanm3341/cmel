@@ -1,0 +1,10 @@
+var planets = readFile("examples/planets.txt").split("\n");
+
+for (var i = 0; i < planets.length(); i = i+1) {
+    var planet = planets[i].split("");
+    var outputString = "";
+    for (var j = 0; j < planet.length(); j = j+1) {
+        outputString = outputString + planet[j] + " ";
+    }
+    print outputString;
+}

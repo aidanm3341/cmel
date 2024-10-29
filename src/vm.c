@@ -123,6 +123,24 @@ static Value listLengthNative(int argCount, Value* args) {
     return NUMBER_VAL(AS_LIST(args[0])->count);
 }
 
+static Value stringSplitNative(int argCount, Value* args) {
+    ObjString* splitString = AS_STRING(args[0]);
+    ObjString* originalString = AS_STRING(args[1]);
+
+    ObjList* list = newList();
+
+    int wordStart = 0;
+    for (int i = 0; i < originalString->length + 1; i++) {
+        if (memcmp(originalString->chars + i, splitString->chars, splitString->length) == 0 || originalString->chars[i] == '\0') {
+            appendToList(list, OBJ_VAL(copyString(originalString->chars + wordStart, i - wordStart)));
+            i += splitString->length;
+            wordStart = i;
+        }
+    }
+
+    return OBJ_VAL(list);
+}
+
 static void defineNative(const char* name, NativeFn function, int arity) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function, arity)));
@@ -162,6 +180,7 @@ void initVM() {
 
     vm.stringClass = newClass(copyString("String", 6));
     definePrimitive(vm.stringClass, "length", lengthNative, 1);
+    definePrimitive(vm.stringClass, "split", stringSplitNative, 2);
 
     vm.numberClass = newClass(copyString("Number", 6));
     definePrimitive(vm.numberClass, "add", addNumberNative, 2);
