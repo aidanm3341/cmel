@@ -20,6 +20,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Boolean
 - String
     - `length()` returns the number of characters in the string
+    - `split(delimiter)` returns a list of elements in the given string as separated by the delimiter
 - Number
     - `add(Number)` returns the number plus the passed number
 - List
@@ -32,6 +33,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - `input()` gets and returns a value from stdin
 - `clock()` returns the current time since the program started in seconds
 - `readFile(path)` returns the content of the given path as a String
+- `number(val)` returns a number representation of the given value. Only numbers, booleans and strings may be passed
 
 ## Usage
 
