@@ -124,21 +124,48 @@ static Value listLengthNative(int argCount, Value* args) {
 }
 
 static Value stringSplitNative(int argCount, Value* args) {
+    if (!IS_STRING(args[0])) {
+        runtimeError("Can only split using a string.");
+        return ERROR_VAL();
+    }
+
     ObjString* splitString = AS_STRING(args[0]);
     ObjString* originalString = AS_STRING(args[1]);
 
     ObjList* list = newList();
 
-    int wordStart = 0;
-    for (int i = 0; i < originalString->length + 1; i++) {
-        if (memcmp(originalString->chars + i, splitString->chars, splitString->length) == 0 || originalString->chars[i] == '\0') {
-            appendToList(list, OBJ_VAL(copyString(originalString->chars + wordStart, i - wordStart)));
-            i += splitString->length;
-            wordStart = i;
+    if (strcmp(splitString->chars, "") == 0) {
+        for (int i = 0; i < originalString->length; i++) {
+            appendToList(list, OBJ_VAL(copyString(originalString->chars + i, 1)));
+        }
+    } else {
+        int wordStart = 0;
+        for (int i = 0; i < originalString->length + 1; i++) {
+            if (memcmp(originalString->chars + i, splitString->chars, splitString->length) == 0 || originalString->chars[i] == '\0') {
+                appendToList(list, OBJ_VAL(copyString(originalString->chars + wordStart, i - wordStart)));
+                i += splitString->length;
+                wordStart = i;
+            }
         }
     }
 
     return OBJ_VAL(list);
+}
+
+static Value numberNative(int argCount, Value* args) {
+    Value val = args[0];
+    if (IS_NUMBER(val)) {
+        return val;
+    } else if (IS_BOOL(val)) {
+        return AS_BOOL(val) ? NUMBER_VAL(1) : NUMBER_VAL(0);
+    } else if (IS_STRING(val)) {
+        ObjString* str = AS_STRING(val);
+        float num = strtof(str->chars, NULL);
+        return NUMBER_VAL(num);
+    } else {
+        runtimeError("Given type cannot be converted to a number.");
+        return ERROR_VAL();
+    }
 }
 
 static void defineNative(const char* name, NativeFn function, int arity) {
@@ -177,6 +204,7 @@ void initVM() {
     defineNative("clock", clockNative, 0);
     defineNative("input", inputNative, 0);
     defineNative("readFile", readFileNative, 1);
+    defineNative("number", numberNative, 1);
 
     vm.stringClass = newClass(copyString("String", 6));
     definePrimitive(vm.stringClass, "length", lengthNative, 1);
@@ -791,7 +819,7 @@ static InterpretResult run() {
                 break;
             }
         }
-    }
+}
 
 #undef BINARY_OP
 #undef READ_STRING

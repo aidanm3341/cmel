@@ -1,0 +1,2 @@
+print "hello world!".split(" ");
+// expect: [hello, world!]
