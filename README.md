@@ -1,6 +1,7 @@
 # Cmel
 
 Cmel (see-mel) is short for Caramel, the name of my cat.
+![Caramel](./caramel.jpeg)
 It's my implementation of Lox from [Crafting Interpreters](https://www.craftinginterpreters.com) by Robert Nystrom.
 
 ## Features
@@ -13,6 +14,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Built-ins
 - Primitive methods (e.g. `"string".length()`)
 - Lists
+- Modulo operator
 
 ### Primitive Types
 
@@ -72,7 +74,7 @@ node --test
 - [x] File Reading
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator
-- [ ] Modulo Operator
+- [x] Modulo Operator
 - [ ] String Escape Characters
 - [ ] String interpolation
 - [ ] Implicit convert to string on all types for concatenation
