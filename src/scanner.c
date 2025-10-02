@@ -170,7 +170,12 @@ static Token number() {
 static Token string() {
     while (peek() != '"' && !isAtEnd()) {
         if (peek() == '\n') scanner.line++;
-        advance();
+        if (peek() == '\\' && peekNext() != '\0') {
+            advance(); // Skip the backslash
+            advance(); // Skip the escaped character
+        } else {
+            advance();
+        }
     }
 
     if (isAtEnd()) return errorToken("Unterminated string.");

@@ -15,6 +15,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Primitive methods (e.g. `"string".length()`)
 - Lists
 - Modulo operator
+- String escape sequences (`\n`, `\t`, `\r`, `\"`, `\\`)
 
 ### Primitive Types
 
@@ -23,6 +24,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - String
     - `length()` returns the number of characters in the string
     - `split(delimiter)` returns a list of elements in the given string as separated by the delimiter
+    - Supports escape sequences: `\n` (newline), `\t` (tab), `\r` (carriage return), `\"` (quote), `\\` (backslash)
 - Number
     - `add(Number)` returns the number plus the passed number
 - List
@@ -75,7 +77,7 @@ node --test
 - [ ] Postfix Operators (e.g. ++ and --)
 - [ ] Ternary Operator
 - [x] Modulo Operator
-- [ ] String Escape Characters
+- [x] String Escape Characters
 - [ ] String interpolation
 - [ ] Implicit convert to string on all types for concatenation
 - [ ] Try/Catch

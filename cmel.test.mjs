@@ -26,15 +26,28 @@ function unescapeNewLines(str) {
 }
 
 function generateAssertions(str, stdout, stderr) {
+    const expectedLines = [];
+    const expectedErrors = [];
+
     str.split("\n").forEach((line) => {
         if (line.startsWith(EXPECT_STRING)) {
             const expectedString = unescapeNewLines(line.substring(EXPECT_STRING.length + 1));
-            assert.equal(stdout, expectedString + "\n");
+            expectedLines.push(expectedString);
         } else if (line.startsWith(EXPECT_ERROR_STRING)) {
             const expectedError = unescapeNewLines(line.substring(EXPECT_ERROR_STRING.length + 1));
-            assert.equal(stderr, expectedError + "\n");
+            expectedErrors.push(expectedError);
         }
     });
+
+    if (expectedLines.length > 0) {
+        const expected = expectedLines.join("\n") + "\n";
+        assert.equal(stdout, expected);
+    }
+
+    if (expectedErrors.length > 0) {
+        const expected = expectedErrors.join("\n") + "\n";
+        assert.equal(stderr, expected);
+    }
 }
 
 function loadFile(fileName) {

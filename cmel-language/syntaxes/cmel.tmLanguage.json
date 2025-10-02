@@ -77,6 +77,10 @@
 			"patterns": [
 				{
 					"name": "constant.character.escape.cmel",
+					"match": "\\\\[ntr\"\\\\]"
+				},
+				{
+					"name": "invalid.illegal.escape.cmel",
 					"match": "\\\\."
 				}
 			]

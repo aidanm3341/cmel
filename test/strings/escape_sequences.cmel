@@ -1,0 +1,30 @@
+// Test escape sequences
+
+// expect: Hello
+// expect: World
+print "Hello\nWorld";
+
+// expect: Tab	here
+print "Tab\there";
+
+// expect: Quote: "Hello"
+print "Quote: \"Hello\"";
+
+// expect: Backslash: \
+print "Backslash: \\";
+
+var message = "Line 1\nLine 2\nLine 3";
+// expect: Line 1
+// expect: Line 2
+// expect: Line 3
+print message;
+
+var tabs = "Col1\tCol2\tCol3";
+// expect: Col1	Col2	Col3
+print tabs;
+
+var mixed = "Start\n\tIndented\n\t\tDouble indent";
+// expect: Start
+// expect: 	Indented
+// expect: 		Double indent
+print mixed;

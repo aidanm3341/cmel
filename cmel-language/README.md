@@ -19,7 +19,7 @@ The extension recognizes the following Cmel language constructs:
 - **Declarations**: `var`, `fun`, `class`
 - **Operators**: `print`, `or`, `and`
 - **Object-Oriented**: `this`, `super`
-- **String Literals**: Double-quoted strings with escape sequence support
+- **String Literals**: Double-quoted strings with escape sequence support (`\n`, `\t`, `\r`, `\"`, `\\`)
 
 ## Installation
 

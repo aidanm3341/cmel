@@ -361,8 +361,61 @@ static void and_(bool canAssign) {
     patchJump(endJump);
 }
 
+static char* processEscapes(const char* str, int length, int* outLength) {
+    char* buffer = (char*)malloc(length);
+    if (buffer == NULL) {
+        error("Out of memory for string processing.");
+        *outLength = 0;
+        return NULL;
+    }
+
+    int writeIndex = 0;
+    for (int i = 0; i < length; i++) {
+        if (str[i] == '\\' && i + 1 < length) {
+            switch (str[i + 1]) {
+                case 'n':
+                    buffer[writeIndex++] = '\n';
+                    i++;
+                    break;
+                case 't':
+                    buffer[writeIndex++] = '\t';
+                    i++;
+                    break;
+                case 'r':
+                    buffer[writeIndex++] = '\r';
+                    i++;
+                    break;
+                case '"':
+                    buffer[writeIndex++] = '"';
+                    i++;
+                    break;
+                case '\\':
+                    buffer[writeIndex++] = '\\';
+                    i++;
+                    break;
+                default:
+                    error("Invalid escape sequence.");
+                    free(buffer);
+                    *outLength = 0;
+                    return NULL;
+            }
+        } else {
+            buffer[writeIndex++] = str[i];
+        }
+    }
+
+    *outLength = writeIndex;
+    return buffer;
+}
+
 static void string(bool canAssign) {
-    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+    int processedLength;
+    char* processed = processEscapes(parser.previous.start + 1, parser.previous.length - 2, &processedLength);
+
+    if (processed != NULL) {
+        emitConstant(OBJ_VAL(copyString(processed, processedLength)));
+        free(processed);
+    }
 }
 
 static void namedVariable(Token name, bool canAssign) {
