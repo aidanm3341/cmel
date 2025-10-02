@@ -6,10 +6,46 @@
 			"include": "#keywords"
 		},
 		{
+			"include": "#function-declaration"
+		},
+		{
+			"include": "#function-call"
+		},
+		{
 			"include": "#strings"
+		},
+		{
+			"include": "#numbers"
 		}
 	],
 	"repository": {
+		"function-declaration": {
+			"patterns": [
+				{
+					"match": "\\b(fun)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
+					"captures": {
+						"1": {
+							"name": "keyword.control.cmel"
+						},
+						"2": {
+							"name": "entity.name.function.declaration.cmel"
+						}
+					}
+				}
+			]
+		},
+		"function-call": {
+			"patterns": [
+				{
+					"match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
+					"captures": {
+						"1": {
+							"name": "support.function.cmel"
+						}
+					}
+				}
+			]
+		},
 		"keywords": {
 			"patterns": [
                 {
@@ -17,12 +53,20 @@
                     "match": "\\b(if|else|while|for|return|break)\\b"
                 },
                 {
-                    "name": "keyword.operator.cmel",
-                    "match": "\\b(var|print|or|and)\\b"
+                    "name": "keyword.control.cmel",
+                    "match": "\\b(var)\\b"
                 },
                 {
-                    "name": "keyword.other.cmel",
-                    "match": "\\b(fun|class|this|super)\\b"
+                    "name": "keyword.operator.logical.cmel",
+                    "match": "\\b(or|and)\\b"
+                },
+                {
+                    "name": "support.function.builtin.cmel",
+                    "match": "\\b(print)\\b"
+                },
+                {
+                    "name": "keyword.control.cmel",
+                    "match": "\\b(class|this|super)\\b"
                 }
             ]
 		},
@@ -36,6 +80,10 @@
 					"match": "\\\\."
 				}
 			]
+		},
+		"numbers": {
+			"name": "constant.numeric.cmel",
+			"match": "\\b[0-9]+(\\.[0-9]+)?\\b"
 		}
 	},
 	"scopeName": "source.cmel"
