@@ -1,65 +1,36 @@
-# cmel-language README
+# Cmel Language
 
-This is the README for your extension "cmel-language". After writing up a brief description, we recommend including the following sections.
+A Visual Studio Code extension providing language support for Cmel, a scripting language.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+This extension provides syntax highlighting and basic language support for `.cmel` files, including:
 
-For example if there is an image subfolder under your extension project workspace:
+- **Syntax Highlighting**: Color coding for keywords, strings, and operators
+- **Bracket Matching**: Automatic matching and highlighting of brackets, parentheses, and braces
+- **Auto-Closing Pairs**: Automatic closing of brackets, quotes, and parentheses
+- **Comment Support**: Line comments (`//`) and block comments (`/* */`)
 
-\!\[feature X\]\(images/feature-x.png\)
+### Supported Language Features
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+The extension recognizes the following Cmel language constructs:
 
-## Requirements
+- **Control Flow**: `if`, `else`, `while`, `for`, `return`, `break`
+- **Declarations**: `var`, `fun`, `class`
+- **Operators**: `print`, `or`, `and`
+- **Object-Oriented**: `this`, `super`
+- **String Literals**: Double-quoted strings with escape sequence support
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Installation
 
-## Extension Settings
+Install this extension from the VS Code marketplace or by placing it in your `.vscode/extensions` directory.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Usage
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Once installed, the extension automatically activates when you open any file with the `.cmel` extension. You'll get syntax highlighting and editor support for Cmel code.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release of Cmel language support for VS Code.

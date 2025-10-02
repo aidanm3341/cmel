@@ -2,6 +2,9 @@
   "name": "cmel-language",
   "displayName": "Cmel Language",
   "description": "",
+  "repository": {
+    "url": "https://github.com/aidanm3341/cmel"
+  },
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.93.0"
@@ -9,6 +12,12 @@
   "categories": [
     "Programming Languages"
   ],
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.1"
+  },
   "contributes": {
     "languages": [{
       "id": "cmel",
