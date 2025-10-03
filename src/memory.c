@@ -123,6 +123,11 @@ static void blackenObject(Obj* object) {
             }
             break;
         }
+        case OBJ_MAP: {
+            ObjMap* map = (ObjMap*)object;
+            markTable(&map->table);
+            break;
+        }
     }
 }
 
@@ -184,6 +189,12 @@ static void freeObject(Obj* object) {
             FREE(ObjList, object);
             break;
         }
+        case OBJ_MAP: {
+            ObjMap* map = (ObjMap*)object;
+            freeTable(&map->table);
+            FREE(ObjMap, object);
+            break;
+        }
     }
 }
 
@@ -206,6 +217,7 @@ static void markRoots() {
     markObject((Obj*)vm.stringClass);
     markObject((Obj*)vm.numberClass);
     markObject((Obj*)vm.listClass);
+    markObject((Obj*)vm.mapClass);
 }
 
 static void traceReferences() {

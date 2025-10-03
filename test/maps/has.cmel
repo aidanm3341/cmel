@@ -1,0 +1,5 @@
+var m = {"key": "value"};
+print m.has("key");
+print m.has("missing");
+// expect: true
+// expect: false

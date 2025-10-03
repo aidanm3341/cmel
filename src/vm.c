@@ -124,6 +124,74 @@ static Value listLengthNative(int argCount, Value* args) {
     return NUMBER_VAL(AS_LIST(args[0])->count);
 }
 
+static Value mapKeysNative(int argCount, Value* args) {
+    ObjMap* map = AS_MAP(args[0]);
+    ObjList* keys = newList();
+
+    for (int i = 0; i < map->table.capacity; i++) {
+        Entry* entry = &map->table.entries[i];
+        if (entry->key != NULL) {
+            appendToList(keys, OBJ_VAL(entry->key));
+        }
+    }
+
+    return OBJ_VAL(keys);
+}
+
+static Value mapValuesNative(int argCount, Value* args) {
+    ObjMap* map = AS_MAP(args[0]);
+    ObjList* values = newList();
+
+    for (int i = 0; i < map->table.capacity; i++) {
+        Entry* entry = &map->table.entries[i];
+        if (entry->key != NULL) {
+            appendToList(values, entry->value);
+        }
+    }
+
+    return OBJ_VAL(values);
+}
+
+static Value mapHasNative(int argCount, Value* args) {
+    ObjMap* map = AS_MAP(args[1]);
+    if (!IS_STRING(args[0])) {
+        runtimeError("Map key must be a string.");
+        return ERROR_VAL();
+    }
+
+    Value dummy;
+    return BOOL_VAL(tableGet(&map->table, AS_STRING(args[0]), &dummy));
+}
+
+static Value mapRemoveNative(int argCount, Value* args) {
+    ObjMap* map = AS_MAP(args[1]);
+    if (!IS_STRING(args[0])) {
+        runtimeError("Map key must be a string.");
+        return ERROR_VAL();
+    }
+
+    Value value;
+    if (tableGet(&map->table, AS_STRING(args[0]), &value)) {
+        tableDelete(&map->table, AS_STRING(args[0]));
+        return value;
+    }
+
+    return NIL_VAL;
+}
+
+static Value mapLengthNative(int argCount, Value* args) {
+    ObjMap* map = AS_MAP(args[0]);
+    int count = 0;
+
+    for (int i = 0; i < map->table.capacity; i++) {
+        if (map->table.entries[i].key != NULL) {
+            count++;
+        }
+    }
+
+    return NUMBER_VAL(count);
+}
+
 static Value stringSplitNative(int argCount, Value* args) {
     if (!IS_STRING(args[0])) {
         runtimeError("Can only split using a string.");
@@ -218,6 +286,13 @@ void initVM() {
     definePrimitive(vm.listClass, "add", addListNative, 2);
     definePrimitive(vm.listClass, "remove", removeListNative, 2);
     definePrimitive(vm.listClass, "length", listLengthNative, 1);
+
+    vm.mapClass = newClass(copyString("Map", 3));
+    definePrimitive(vm.mapClass, "keys", mapKeysNative, 1);
+    definePrimitive(vm.mapClass, "values", mapValuesNative, 1);
+    definePrimitive(vm.mapClass, "has", mapHasNative, 2);
+    definePrimitive(vm.mapClass, "remove", mapRemoveNative, 2);
+    definePrimitive(vm.mapClass, "length", mapLengthNative, 1);
 }
 
 void freeVM() {
@@ -226,6 +301,7 @@ void freeVM() {
     vm.stringClass = NULL;
     vm.numberClass = NULL;
     vm.listClass = NULL;
+    vm.mapClass = NULL;
     vm.initString = NULL;
     freeObjects();
 }
@@ -359,6 +435,8 @@ static bool invoke(ObjString* name, int argCount) {
         return invokePrimitive(vm.numberClass, receiver, name, argCount);
     } else if (IS_LIST(receiver)) {
         return invokePrimitive(vm.listClass, receiver, name, argCount);
+    } else if (IS_MAP(receiver)) {
+        return invokePrimitive(vm.mapClass, receiver, name, argCount);
     } else {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
@@ -624,6 +702,14 @@ static InterpretResult run() {
                     }
 
                     break;
+                } else if (IS_MAP(peek(0))) {
+                    ObjString* name = READ_STRING();
+
+                    if (!bindNative(vm.mapClass, name)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    break;
                 }
 
                 runtimeError("Only instances have properties");
@@ -774,56 +860,111 @@ static InterpretResult run() {
                 push(OBJ_VAL(list));
                 break;
             }
+            case OP_BUILD_MAP: {
+                // e.g. stack before: ["key1", value1, "key2", value2], stack after: [someMap]
+                ObjMap* map = newMap();
+                uint8_t itemCount = READ_BYTE(); // number of key-value pairs
+
+                push(OBJ_VAL(map)); // to avoid accidental GCing
+
+                // Items are on stack in reverse order: first key is deepest
+                for (int i = itemCount * 2; i > 0; i -= 2) {
+                    Value key = peek(i);
+                    Value value = peek(i - 1);
+
+                    if (!IS_STRING(key)) {
+                        runtimeError("Map keys must be strings.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    tableSet(&map->table, AS_STRING(key), value);
+                }
+                pop(); // pop the map we pushed
+
+                // Pop all key-value pairs
+                for (int i = 0; i < itemCount * 2; i++) {
+                    pop();
+                }
+
+                push(OBJ_VAL(map));
+                break;
+            }
             case OP_INDEX: {
                 Value indexVal = pop();
-                Value listVal = pop();
+                Value obj = pop();
                 Value result;
 
-                if (!IS_LIST(listVal)) {
-                    runtimeError("Can only index into a list.");
+                if (IS_LIST(obj)) {
+                    ObjList* list = AS_LIST(obj);
+
+                    if (!IS_NUMBER(indexVal)) {
+                        runtimeError("List index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                    int index = AS_NUMBER(indexVal);
+
+                    if (!isValidListIndex(list, index)) {
+                        runtimeError("List index out of range.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    result = indexFromList(list, index);
+                    push(result);
+                } else if (IS_MAP(obj)) {
+                    ObjMap* map = AS_MAP(obj);
+
+                    if (!IS_STRING(indexVal)) {
+                        runtimeError("Map key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    Value value;
+                    if (tableGet(&map->table, AS_STRING(indexVal), &value)) {
+                        push(value);
+                    } else {
+                        push(NIL_VAL);
+                    }
+                } else {
+                    runtimeError("Can only index into lists and maps.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                ObjList* list = AS_LIST(listVal);
-
-                if (!IS_NUMBER(indexVal)) {
-                    runtimeError("Index value must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                int index = AS_NUMBER(indexVal);
-
-                if (!isValidListIndex(list, index)) {
-                    runtimeError("Index out of range.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                result = indexFromList(list, index);
-                push(result);
                 break;
             }
             case OP_STORE: {
                 Value item = pop();
                 Value indexVal = pop();
-                Value listVal = pop();
+                Value obj = pop();
 
-                if (!IS_LIST(listVal)) {
-                    runtimeError("Can't store a value in a non-list.");
+                if (IS_LIST(obj)) {
+                    ObjList* list = AS_LIST(obj);
+
+                    if (!IS_NUMBER(indexVal)) {
+                        runtimeError("List index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                    int index = AS_NUMBER(indexVal);
+
+                    if (!isValidListIndex(list, index)) {
+                        runtimeError("List index out of range.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    storeToList(list, index, item);
+                    push(item);
+                } else if (IS_MAP(obj)) {
+                    ObjMap* map = AS_MAP(obj);
+
+                    if (!IS_STRING(indexVal)) {
+                        runtimeError("Map key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    tableSet(&map->table, AS_STRING(indexVal), item);
+                    push(item);
+                } else {
+                    runtimeError("Can only store values in lists and maps.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                ObjList* list = AS_LIST(listVal);
-
-                if (!IS_NUMBER(indexVal)) {
-                    runtimeError("Index value must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                int index = AS_NUMBER(indexVal);
-
-                if (!isValidListIndex(list, index)) {
-                    runtimeError("Index out of range.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                storeToList(list, index, item);
-                push(item);
                 break;
             }
             case OP_PLACEHOLDER: {

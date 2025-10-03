@@ -524,6 +524,36 @@ static void list(bool canAssign) {
     emitByte(itemCount);
 }
 
+static void map(bool canAssign) {
+    int itemCount = 0;
+    if (!check(TOKEN_RIGHT_BRACE)) {
+        do {
+            if (check(TOKEN_RIGHT_BRACE)) {
+                break; // trailing comma case
+            }
+
+            // Parse key (must be a string)
+            parsePrecedence(PREC_OR);
+
+            // Expect colon
+            consume(TOKEN_COLON, "Expect ':' after map key.");
+
+            // Parse value
+            parsePrecedence(PREC_OR);
+
+            if (itemCount == UINT8_COUNT / 2) {
+                error("Cannot have more than 128 items in a map literal.");
+            }
+            itemCount++;
+        } while (match(TOKEN_COMMA));
+    }
+
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after map literal.");
+
+    emitByte(OP_BUILD_MAP);
+    emitByte(itemCount);
+}
+
 static void subscript(bool canAssign) {
     parsePrecedence(PREC_OR);
     consume(TOKEN_RIGHT_BRACKET, "Expect ']' after index.");
@@ -539,7 +569,7 @@ static void subscript(bool canAssign) {
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN] = {grouping, call,   PREC_CALL},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_LEFT_BRACE]    = {map,      NULL,   PREC_NONE},
   [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_LEFT_BRACKET]  = {list,     subscript, PREC_SUBSCRIPT},
   [TOKEN_RIGHT_BRACKET] = {NULL,     NULL,   PREC_NONE},
@@ -549,6 +579,7 @@ ParseRule rules[] = {
   [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
   [TOKEN_PERCENT]       = {NULL,     binary, PREC_TERM},
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_COLON]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
   [TOKEN_BANG]          = {unary,     NULL,  PREC_NONE},
@@ -901,6 +932,7 @@ static int getByteCountForArguments(const uint8_t* code, const int ip) {
         case OP_CLASS:
         case OP_METHOD:
         case OP_BUILD_LIST:
+        case OP_BUILD_MAP:
             return 1;
 
         case OP_INVOKE:

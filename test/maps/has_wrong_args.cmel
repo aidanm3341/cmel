@@ -1,0 +1,4 @@
+// Runtime error: has() expects 1 argument
+var m = {"key": "value"};
+m.has();
+// expect runtime error: has() expects exactly 1 argument.

@@ -15,6 +15,7 @@
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_LIST(value) isObjType(value, OBJ_LIST)
+#define IS_MAP(value) isObjType(value, OBJ_MAP)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
 
@@ -25,6 +26,7 @@
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjInstance*)AS_OBJ(value))
 #define AS_LIST(value) ((ObjList*)AS_OBJ(value))
+#define AS_MAP(value) ((ObjMap*)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
 #define AS_NATIVE_OBJ(value) (((ObjNative*)AS_OBJ(value)))
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
@@ -38,6 +40,7 @@ typedef enum {
     OBJ_FUNCTION,
     OBJ_INSTANCE,
     OBJ_LIST,
+    OBJ_MAP,
     OBJ_NATIVE,
     OBJ_STRING,
     OBJ_UPVALUE
@@ -117,6 +120,11 @@ typedef struct {
     Value* items;
 } ObjList;
 
+typedef struct {
+    Obj obj;
+    Table table;
+} ObjMap;
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 ObjBoundNative* newBoundNative(Value receiver, ObjNative* native);
 ObjClass* newClass(ObjString* name);
@@ -125,6 +133,7 @@ ObjFunction* newFunction();
 ObjInstance* newInstance(ObjClass* klass);
 ObjNative* newNative(NativeFn function, int arity);
 ObjList* newList();
+ObjMap* newMap();
 void appendToList(ObjList* list, Value value);
 void storeToList(ObjList* list, int index, Value value);
 Value indexFromList(ObjList* list, int index);

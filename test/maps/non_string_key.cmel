@@ -1,0 +1,4 @@
+// Runtime error: map keys must be strings
+var m = {};
+m[42] = "value";
+// expect runtime error: Map keys must be strings.

@@ -1,0 +1,4 @@
+// Runtime error: remove() expects 1 argument
+var m = {"key": "value"};
+m.remove();
+// expect runtime error: remove() expects exactly 1 argument.

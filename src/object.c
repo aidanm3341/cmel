@@ -89,6 +89,12 @@ ObjList* newList() {
     return list;
 }
 
+ObjMap* newMap() {
+    ObjMap* map = ALLOCATE_OBJ(ObjMap, OBJ_MAP);
+    initTable(&map->table);
+    return map;
+}
+
 void appendToList(ObjList* list, Value value) {
     if (list->capacity < list->count + 1) {
         int oldCapacity = list->capacity;
@@ -231,6 +237,22 @@ void printObject(Value value) {
                 }
             }
             printf("]");
+            break;
+        }
+        case OBJ_MAP: {
+            ObjMap* map = AS_MAP(value);
+            printf("{");
+            bool first = true;
+            for (int i = 0; i < map->table.capacity; i++) {
+                Entry* entry = &map->table.entries[i];
+                if (entry->key != NULL) {
+                    if (!first) printf(", ");
+                    printf("%s: ", entry->key->chars);
+                    printValue(entry->value);
+                    first = false;
+                }
+            }
+            printf("}");
             break;
         }
     }

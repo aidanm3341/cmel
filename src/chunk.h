@@ -45,6 +45,7 @@ typedef enum {
     OP_INHERIT,
     OP_METHOD,
     OP_BUILD_LIST,
+    OP_BUILD_MAP,
     OP_INDEX,
     OP_STORE,
     OP_PLACEHOLDER // Should never exist at runtime, this is used only by the compiler and should be removed before runtime.

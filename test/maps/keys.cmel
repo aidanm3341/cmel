@@ -1,0 +1,3 @@
+var m = {"a": 1, "b": 2};
+print m.keys().length();
+// expect: 2

@@ -14,6 +14,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Built-ins
 - Primitive methods (e.g. `"string".length()`)
 - Lists
+- Maps (hash tables with string keys)
 - Modulo operator
 - String escape sequences (`\n`, `\t`, `\r`, `\"`, `\\`)
 
@@ -31,6 +32,15 @@ Here are the features which separate `Cmel` from `Lox`.
     - `add(value)` mutates the list by adding the given value and returns the same list
     - `remove(index)` mutates the list by removing the value at the given index and returns the same list
     - `length()` returns the length of the list
+- Map (hash table with string keys)
+    - `keys()` returns a list of all keys in the map
+    - `values()` returns a list of all values in the map
+    - `has(key)` returns true if the key exists in the map
+    - `remove(key)` removes the key-value pair and returns the value (or nil if not found)
+    - `length()` returns the number of key-value pairs in the map
+    - Access via subscript: `map["key"]` returns value or nil
+    - Set via subscript: `map["key"] = value`
+    - Literal syntax: `{"key1": value1, "key2": value2}`
 
 ### Built-in Functions
 
@@ -83,7 +93,8 @@ node --test
 - [ ] Try/Catch
 - [ ] Anonymous Functions
 - [ ] Modules
-- [ ] User facing Hash Tables (Including non-string keys)
+- [x] User facing Hash Tables (string keys only)
+- [ ] Hash Tables with non-string keys
 - [ ] Continue Statement
 - [x] Break Statement
 - [ ] Switch Statement

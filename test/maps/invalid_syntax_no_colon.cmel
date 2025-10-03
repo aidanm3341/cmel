@@ -1,0 +1,3 @@
+// Compile error: missing colon in map literal
+var m = {"key" "value"};
+// expect error: [line 2] Error at '"value"': Expect ':' after map key.

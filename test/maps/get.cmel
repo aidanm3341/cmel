@@ -1,0 +1,3 @@
+var m = {"key": "value"};
+print m["key"];
+// expect: value
