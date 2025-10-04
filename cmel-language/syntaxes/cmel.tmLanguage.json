@@ -3,6 +3,9 @@
 	"name": "Cmel",
 	"patterns": [
 		{
+			"include": "#comments"
+		},
+		{
 			"include": "#keywords"
 		},
 		{
@@ -19,6 +22,19 @@
 		}
 	],
 	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.cmel",
+					"match": "//.*$"
+				},
+				{
+					"name": "comment.block.cmel",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
 		"function-declaration": {
 			"patterns": [
 				{
@@ -54,7 +70,11 @@
                 },
                 {
                     "name": "keyword.control.cmel",
-                    "match": "\\b(var)\\b"
+                    "match": "\\b(var|const)\\b"
+                },
+                {
+                    "name": "keyword.control.import.cmel",
+                    "match": "\\b(import|from)\\b"
                 },
                 {
                     "name": "keyword.operator.logical.cmel",
