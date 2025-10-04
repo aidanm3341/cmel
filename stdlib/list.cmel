@@ -1,6 +1,6 @@
 // List utilities
 
-fun sum(list) {
+export fun sum(list) {
     var total = 0;
     for (var i = 0; i < list.length(); i = i + 1) {
         total = total + list[i];
@@ -8,7 +8,7 @@ fun sum(list) {
     return total;
 }
 
-fun filter(list, predicate) {
+export fun filter(list, predicate) {
     var result = [];
     for (var i = 0; i < list.length(); i = i + 1) {
         if (predicate(list[i])) {
@@ -18,7 +18,7 @@ fun filter(list, predicate) {
     return result;
 }
 
-fun map(list, transform) {
+export fun map(list, transform) {
     var result = [];
     for (var i = 0; i < list.length(); i = i + 1) {
         result.add(transform(list[i]));
@@ -26,7 +26,7 @@ fun map(list, transform) {
     return result;
 }
 
-fun find(list, predicate) {
+export fun find(list, predicate) {
     for (var i = 0; i < list.length(); i = i + 1) {
         if (predicate(list[i])) {
             return list[i];
@@ -35,7 +35,7 @@ fun find(list, predicate) {
     return nil;
 }
 
-fun contains(list, value) {
+export fun contains(list, value) {
     for (var i = 0; i < list.length(); i = i + 1) {
         if (list[i] == value) {
             return true;
@@ -44,7 +44,7 @@ fun contains(list, value) {
     return false;
 }
 
-fun reverse(list) {
+export fun reverse(list) {
     var result = [];
     for (var i = list.length() - 1; i >= 0; i = i - 1) {
         result.add(list[i]);
@@ -52,7 +52,7 @@ fun reverse(list) {
     return result;
 }
 
-fun sort(list) {
+export fun sort(list) {
     // Simple bubble sort
     var arr = [];
     for (var i = 0; i < list.length(); i = i + 1) {

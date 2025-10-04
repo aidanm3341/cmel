@@ -23,6 +23,7 @@ typedef struct {
     Table globals;
     Table strings;
     Table modules;
+    ObjModule* currentModule;
     ObjString* initString;
     ObjUpvalue* openUpvalues;
 

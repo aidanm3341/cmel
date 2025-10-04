@@ -140,6 +140,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
         case OP_STORE: return threeByteInstruction("OP_STORE", chunk, offset);
         case OP_IMPORT: return constantInstruction("OP_IMPORT", chunk, offset);
         case OP_IMPORT_FROM: return twoByteInstruction("OP_IMPORT_FROM", chunk, offset);
+        case OP_EXPORT: return constantInstruction("OP_EXPORT", chunk, offset);
         case OP_PLACEHOLDER: return simpleInstruction("OP_PLACEHOLDER", offset);
         default:
             printf("Unknown opcode %d\n", instruction);

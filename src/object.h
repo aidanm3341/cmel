@@ -85,11 +85,14 @@ typedef struct ObjUpvalue {
     struct ObjUpvalue* next;
 } ObjUpvalue;
 
+typedef struct ObjModule ObjModule;
+
 typedef struct {
     Obj obj;
     ObjFunction* function;
     ObjUpvalue** upvalues;
     int upvalueCount;
+    ObjModule* module;
 } ObjClosure;
 
 typedef struct ObjClass {
@@ -128,16 +131,17 @@ typedef struct {
     Table table;
 } ObjMap;
 
-typedef struct {
+struct ObjModule {
     Obj obj;
     ObjString* name;
     Table globals;
-} ObjModule;
+    Table exports;
+};
 
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 ObjBoundNative* newBoundNative(Value receiver, ObjNative* native);
 ObjClass* newClass(ObjString* name);
-ObjClosure* newClosure(ObjFunction* function);
+ObjClosure* newClosure(ObjFunction* function, ObjModule* module);
 ObjFunction* newFunction();
 ObjInstance* newInstance(ObjClass* klass);
 ObjNative* newNative(NativeFn function, int arity);

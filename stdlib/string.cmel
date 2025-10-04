@@ -1,6 +1,6 @@
 // String utilities
 
-fun join(list, delimiter) {
+export fun join(list, delimiter) {
     if (list.length() == 0) return "";
 
     var result = "";
@@ -13,7 +13,7 @@ fun join(list, delimiter) {
     return result;
 }
 
-fun reverse(str) {
+export fun reverse(str) {
     var chars = str.split("");
     var result = "";
     for (var i = chars.length() - 1; i >= 0; i = i - 1) {
@@ -22,7 +22,7 @@ fun reverse(str) {
     return result;
 }
 
-fun startsWith(str, prefix) {
+export fun startsWith(str, prefix) {
     if (prefix.length() > str.length()) return false;
 
     var strPrefix = "";
@@ -34,7 +34,7 @@ fun startsWith(str, prefix) {
     return strPrefix == prefix;
 }
 
-fun endsWith(str, suffix) {
+export fun endsWith(str, suffix) {
     if (suffix.length() > str.length()) return false;
 
     var strSuffix = "";

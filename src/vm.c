@@ -283,6 +283,7 @@ void initVM() {
     initTable(&vm.strings);
     initTable(&vm.modules);
 
+    vm.currentModule = NULL;
     vm.initString = NULL;
     vm.initString = copyString("init", 4);
 
@@ -699,6 +700,16 @@ static InterpretResult run() {
             case OP_GET_GLOBAL: {
                 ObjString* name = READ_STRING();
                 Value value;
+
+                // First check module's globals if closure has a module
+                if (frame->closure->module != NULL) {
+                    if (tableGet(&frame->closure->module->globals, name, &value)) {
+                        push(value);
+                        break;
+                    }
+                }
+
+                // Fall back to vm.globals for built-ins
                 if (!tableGet(&vm.globals, name, &value)) {
                     runtimeError("Undefined variable '%s'.", name->chars);
                     return INTERPRET_RUNTIME_ERROR;
@@ -708,13 +719,28 @@ static InterpretResult run() {
             }
             case OP_DEFINE_GLOBAL: {
                 ObjString* name = READ_STRING();
+                // Always define in vm.globals (which is either the real globals or a temporary module namespace)
                 tableSet(&vm.globals, name, peek(0));
                 pop();
                 break;
             }
             case OP_SET_GLOBAL: {
                 ObjString* name = READ_STRING();
+
+                // Try to set in module's globals first if closure has a module
+                if (frame->closure->module != NULL) {
+                    if (!tableSet(&frame->closure->module->globals, name, peek(0))) {
+                        // Successfully set in module globals
+                        break;
+                    }
+                }
+
+                // Fall back to vm.globals
                 if (tableSet(&vm.globals, name, peek(0))) {
+                    // tableSet returns true if it's a new key (error for SET)
+                    if (frame->closure->module != NULL) {
+                        tableDelete(&frame->closure->module->globals, name);
+                    }
                     tableDelete(&vm.globals, name);
                     runtimeError("Undefined variable '%s'", name->chars);
                     return INTERPRET_RUNTIME_ERROR;
@@ -862,7 +888,9 @@ static InterpretResult run() {
             }
             case OP_CLOSURE: {
                 ObjFunction* function = AS_FUNCTION(READ_CONSTANT());
-                ObjClosure* closure = newClosure(function);
+                // Inherit module from the enclosing closure
+                ObjModule* module = frame->closure->module;
+                ObjClosure* closure = newClosure(function, module);
                 push(OBJ_VAL(closure));
                 for (int i = 0; i < function->upvalueCount; i++) {
                     uint8_t isLocal = READ_BYTE();
@@ -1066,10 +1094,15 @@ static InterpretResult run() {
                 frame = &vm.frames[vm.frameCount - 1];
 
                 // Import all exports into current global scope
-                for (int i = 0; i < module->globals.capacity; i++) {
-                    Entry* entry = &module->globals.entries[i];
+                // Exported functions will access their module's globals via closure->module
+                Table* targetTable = frame->closure->module != NULL
+                    ? &frame->closure->module->globals
+                    : &vm.globals;
+
+                for (int i = 0; i < module->exports.capacity; i++) {
+                    Entry* entry = &module->exports.entries[i];
                     if (entry->key != NULL) {
-                        tableSet(&vm.globals, entry->key, entry->value);
+                        tableSet(targetTable, entry->key, entry->value);
                     }
                 }
 
@@ -1091,24 +1124,37 @@ static InterpretResult run() {
 
                 // Check that the named export exists
                 Value value;
-                if (!tableGet(&module->globals, name, &value)) {
+                if (!tableGet(&module->exports, name, &value)) {
                     runtimeError("Module '%s' has no export '%s'.", path->chars, name->chars);
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
-                // Import all module globals so that the imported function can access them
-                // This is necessary because functions access globals dynamically,
-                // not through closures
-                for (int i = 0; i < module->globals.capacity; i++) {
-                    Entry* entry = &module->globals.entries[i];
-                    if (entry->key != NULL) {
-                        // Skip natives and classes as they're already in parent scope
-                        if (!IS_NATIVE(entry->value) && !IS_CLASS(entry->value)) {
-                            tableSet(&vm.globals, entry->key, entry->value);
-                        }
-                    }
+                // Import only the requested name
+                // Exported functions will access their module's globals via closure->module
+                Table* targetTable = frame->closure->module != NULL
+                    ? &frame->closure->module->globals
+                    : &vm.globals;
+                tableSet(targetTable, name, value);
+
+                break;
+            }
+            case OP_EXPORT: {
+                ObjString* name = READ_STRING();
+
+                if (vm.currentModule == NULL) {
+                    runtimeError("Cannot export outside of module context.");
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
+                // Get the value from globals
+                Value value;
+                if (!tableGet(&vm.globals, name, &value)) {
+                    runtimeError("Undefined variable '%s'.", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                // Add to exports table
+                tableSet(&vm.currentModule->exports, name, value);
                 break;
             }
             case OP_PLACEHOLDER: {
@@ -1177,9 +1223,14 @@ static ObjModule* loadModule(const char* path) {
         return NULL;
     }
 
-    // Save current globals and stack pointer
+    // Save current globals, stack pointer, and module
     Table savedGlobals = vm.globals;
     Value* savedStackTop = vm.stackTop;
+    ObjModule* savedModule = vm.currentModule;
+
+    // Create module object before execution
+    ObjModule* module = newModule(pathString);
+    vm.currentModule = module;
 
     // Create fresh globals table for module
     initTable(&vm.globals);
@@ -1198,7 +1249,7 @@ static ObjModule* loadModule(const char* path) {
 
     // Execute module in isolated scope
     push(OBJ_VAL(moduleFunction));
-    ObjClosure* moduleClosure = newClosure(moduleFunction);
+    ObjClosure* moduleClosure = newClosure(moduleFunction, module);
     pop();
     push(OBJ_VAL(moduleClosure));
     call(moduleClosure, 0);
@@ -1209,20 +1260,21 @@ static ObjModule* loadModule(const char* path) {
         freeTable(&vm.globals);
         vm.globals = savedGlobals;
         vm.stackTop = savedStackTop;
+        vm.currentModule = savedModule;
         return NULL;
     }
 
     // Pop return value
     pop();
 
-    // Create module object with captured globals
-    ObjModule* module = newModule(pathString);
+    // Copy globals to module
     tableAddAll(&vm.globals, &module->globals);
 
-    // Restore original globals and stack pointer
+    // Restore original globals, stack pointer, and module
     freeTable(&vm.globals);
     vm.globals = savedGlobals;
     vm.stackTop = savedStackTop;
+    vm.currentModule = savedModule;
 
     // Cache the module
     tableSet(&vm.modules, pathString, OBJ_VAL(module));
@@ -1235,7 +1287,8 @@ InterpretResult interpret(const char* source) {
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
 
     push(OBJ_VAL(function));
-    ObjClosure* closure = newClosure(function);
+    // Main script has no module (NULL)
+    ObjClosure* closure = newClosure(function, NULL);
     pop();
     push(OBJ_VAL(closure));
     call(closure, 0);

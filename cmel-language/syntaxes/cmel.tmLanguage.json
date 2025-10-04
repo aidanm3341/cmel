@@ -74,7 +74,7 @@
                 },
                 {
                     "name": "keyword.control.import.cmel",
-                    "match": "\\b(import|from)\\b"
+                    "match": "\\b(import|from|export)\\b"
                 },
                 {
                     "name": "keyword.operator.logical.cmel",

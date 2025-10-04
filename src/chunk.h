@@ -50,6 +50,7 @@ typedef enum {
     OP_STORE,
     OP_IMPORT,
     OP_IMPORT_FROM,
+    OP_EXPORT,
     OP_PLACEHOLDER // Should never exist at runtime, this is used only by the compiler and should be removed before runtime.
 } OpCode;
 

@@ -1180,20 +1180,57 @@ static void synchronize() {
 }
 
 static void declaration() {
+    bool isExport = false;
+    if (match(TOKEN_EXPORT)) {
+        isExport = true;
+        if (current->scopeDepth > 0) {
+            error("Cannot export from local scope.");
+            return;
+        }
+    }
+
     if (match(TOKEN_CLASS)) {
         classDeclaration();
+        if (isExport) {
+            error("Cannot export classes yet.");
+        }
     } else if (match(TOKEN_FUN)) {
-        funDeclaration();
+        uint8_t global = parseVariable("Expect function name.", false);
+        markInitialized();
+        function(TYPE_FUNCTION);
+        defineVariable(global);
+        if (isExport) {
+            emitBytes(OP_EXPORT, global);
+        }
     } else if (match(TOKEN_VAR)) {
-        varDeclaration(false);
+        uint8_t global = parseVariable("Expect variable name.", false);
+        if (match(TOKEN_EQUAL)) {
+            expression();
+        } else {
+            emitByte(OP_NIL);
+        }
+        consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+        defineVariable(global);
+        if (isExport) {
+            emitBytes(OP_EXPORT, global);
+        }
     } else if (match(TOKEN_CONST)) {
         if (current->scopeDepth == 0) {
             error("Cannot define a global const.");
         }
         varDeclaration(true);
+        if (isExport) {
+            error("Cannot export const (must be global scope).");
+        }
     } else if (match(TOKEN_IMPORT)) {
         importStatement();
+        if (isExport) {
+            error("Cannot export import statements.");
+        }
     } else {
+        if (isExport) {
+            error("Can only export declarations.");
+        }
         statement();
     }
 

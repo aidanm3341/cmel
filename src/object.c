@@ -45,7 +45,7 @@ ObjClass* newClass(ObjString* name) {
     return klass;
 }
 
-ObjClosure* newClosure(ObjFunction* function) {
+ObjClosure* newClosure(ObjFunction* function, ObjModule* module) {
     ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++) {
         upvalues[i] = NULL;
@@ -55,6 +55,7 @@ ObjClosure* newClosure(ObjFunction* function) {
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
+    closure->module = module;
     return closure;
 }
 
@@ -99,6 +100,7 @@ ObjModule* newModule(ObjString* name) {
     ObjModule* module = ALLOCATE_OBJ(ObjModule, OBJ_MODULE);
     module->name = name;
     initTable(&module->globals);
+    initTable(&module->exports);
     return module;
 }
 
