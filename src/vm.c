@@ -127,6 +127,7 @@ static Value listLengthNative(int argCount, Value* args) {
 static Value mapKeysNative(int argCount, Value* args) {
     ObjMap* map = AS_MAP(args[0]);
     ObjList* keys = newList();
+    pushTempRoot(OBJ_VAL(keys));
 
     for (int i = 0; i < map->table.capacity; i++) {
         Entry* entry = &map->table.entries[i];
@@ -135,12 +136,14 @@ static Value mapKeysNative(int argCount, Value* args) {
         }
     }
 
+    popTempRoot();
     return OBJ_VAL(keys);
 }
 
 static Value mapValuesNative(int argCount, Value* args) {
     ObjMap* map = AS_MAP(args[0]);
     ObjList* values = newList();
+    pushTempRoot(OBJ_VAL(values));
 
     for (int i = 0; i < map->table.capacity; i++) {
         Entry* entry = &map->table.entries[i];
@@ -149,6 +152,7 @@ static Value mapValuesNative(int argCount, Value* args) {
         }
     }
 
+    popTempRoot();
     return OBJ_VAL(values);
 }
 
@@ -202,22 +206,30 @@ static Value stringSplitNative(int argCount, Value* args) {
     ObjString* originalString = AS_STRING(args[1]);
 
     ObjList* list = newList();
+    pushTempRoot(OBJ_VAL(list));
 
     if (strcmp(splitString->chars, "") == 0) {
         for (int i = 0; i < originalString->length; i++) {
-            appendToList(list, OBJ_VAL(copyString(originalString->chars + i, 1)));
+            ObjString* str = copyString(originalString->chars + i, 1);
+            pushTempRoot(OBJ_VAL(str));
+            appendToList(list, OBJ_VAL(str));
+            popTempRoot();
         }
     } else {
         int wordStart = 0;
         for (int i = 0; i < originalString->length + 1; i++) {
             if (memcmp(originalString->chars + i, splitString->chars, splitString->length) == 0 || originalString->chars[i] == '\0') {
-                appendToList(list, OBJ_VAL(copyString(originalString->chars + wordStart, i - wordStart)));
+                ObjString* str = copyString(originalString->chars + wordStart, i - wordStart);
+                pushTempRoot(OBJ_VAL(str));
+                appendToList(list, OBJ_VAL(str));
+                popTempRoot();
                 i += splitString->length;
                 wordStart = i;
             }
         }
     }
 
+    popTempRoot();
     return OBJ_VAL(list);
 }
 
@@ -263,6 +275,10 @@ void initVM() {
     vm.grayCapacity = 0;
     vm.grayStack = NULL;
 
+    vm.tempRootCount = 0;
+    vm.tempRootCapacity = 0;
+    vm.tempRoots = NULL;
+
     initTable(&vm.globals);
     initTable(&vm.strings);
 
@@ -303,6 +319,7 @@ void freeVM() {
     vm.listClass = NULL;
     vm.mapClass = NULL;
     vm.initString = NULL;
+    free(vm.tempRoots);
     freeObjects();
 }
 
@@ -314,6 +331,19 @@ void push(Value value) {
 Value pop() {
     vm.stackTop--;
     return *vm.stackTop;
+}
+
+void pushTempRoot(Value value) {
+    if (vm.tempRootCapacity < vm.tempRootCount + 1) {
+        int oldCapacity = vm.tempRootCapacity;
+        vm.tempRootCapacity = oldCapacity < 8 ? 8 : oldCapacity * 2;
+        vm.tempRoots = realloc(vm.tempRoots, sizeof(Value) * vm.tempRootCapacity);
+    }
+    vm.tempRoots[vm.tempRootCount++] = value;
+}
+
+void popTempRoot() {
+    vm.tempRootCount--;
 }
 
 static Value peek(int distance) {
@@ -529,6 +559,36 @@ static void concatenate() {
     push(OBJ_VAL(result));
 }
 
+static void concatenateWithConversion() {
+    // Both operands are on stack already, just call concatenate with both as strings
+    // If they're already strings, great. If not, replace them with string versions.
+
+    // Check if we need to convert top value (b)
+    if (!IS_STRING(peek(0))) {
+        Value bVal = pop();
+        pushTempRoot(bVal);
+        ObjString* bStr = valueToString(bVal);
+        popTempRoot();
+        push(OBJ_VAL(bStr));
+    }
+
+    // Check if we need to convert second value (a)
+    if (!IS_STRING(peek(1))) {
+        Value bVal = pop();  // temporarily remove b
+        pushTempRoot(bVal);
+        Value aVal = pop();
+        pushTempRoot(aVal);
+        ObjString* aStr = valueToString(aVal);
+        popTempRoot();
+        push(OBJ_VAL(aStr));  // push converted a
+        popTempRoot();
+        push(bVal);  // restore b
+    }
+
+    // Now both are strings, use regular concatenate
+    concatenate();
+}
+
 static InterpretResult run() {
     CallFrame* frame = &vm.frames[vm.frameCount - 1];
 
@@ -562,8 +622,8 @@ static InterpretResult run() {
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
             case OP_ADD: {
-                if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
-                    concatenate();
+                if (IS_STRING(peek(0)) || IS_STRING(peek(1))) {
+                    concatenateWithConversion();
                 } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
                     double b = AS_NUMBER(pop());
                     double a = AS_NUMBER(pop());
@@ -893,6 +953,15 @@ static InterpretResult run() {
                 Value indexVal = pop();
                 Value obj = pop();
                 Value result;
+
+                // DEBUG: Check what obj actually is
+                if (!IS_LIST(obj) && !IS_MAP(obj)) {
+                    fprintf(stderr, "DEBUG OP_INDEX: obj type=%d, IS_STRING=%d, IS_NUMBER=%d\n",
+                            obj.type, IS_STRING(obj), IS_NUMBER(obj));
+                    if (IS_OBJ(obj)) {
+                        fprintf(stderr, "  OBJ_TYPE=%d\n", OBJ_TYPE(obj));
+                    }
+                }
 
                 if (IS_LIST(obj)) {
                     ObjList* list = AS_LIST(obj);

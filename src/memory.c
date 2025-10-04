@@ -218,6 +218,11 @@ static void markRoots() {
     markObject((Obj*)vm.numberClass);
     markObject((Obj*)vm.listClass);
     markObject((Obj*)vm.mapClass);
+
+    // Mark temporary roots
+    for (int i = 0; i < vm.tempRootCount; i++) {
+        markValue(vm.tempRoots[i]);
+    }
 }
 
 static void traceReferences() {

@@ -17,6 +17,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Maps (hash tables with string keys)
 - Modulo operator
 - String escape sequences (`\n`, `\t`, `\r`, `\"`, `\\`)
+- Automatic type-to-string conversion with the `+` operator
 
 ### Primitive Types
 
@@ -26,6 +27,7 @@ Here are the features which separate `Cmel` from `Lox`.
     - `length()` returns the number of characters in the string
     - `split(delimiter)` returns a list of elements in the given string as separated by the delimiter
     - Supports escape sequences: `\n` (newline), `\t` (tab), `\r` (carriage return), `\"` (quote), `\\` (backslash)
+    - When using the `+` operator with a string and any other type, the non-string operand is automatically converted to a string (e.g., `"Answer: " + 42` produces `"Answer: 42"`)
 - Number
     - `add(Number)` returns the number plus the passed number
 - List
@@ -89,7 +91,7 @@ node --test
 - [x] Modulo Operator
 - [x] String Escape Characters
 - [ ] String interpolation
-- [ ] Implicit convert to string on all types for concatenation
+- [x] Implicit convert to string on all types for concatenation
 - [ ] Try/Catch
 - [ ] Anonymous Functions
 - [ ] Modules

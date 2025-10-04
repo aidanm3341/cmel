@@ -54,3 +54,34 @@ bool valuesEqual(Value a, Value b) {
         default: return false; // unreachable
     }
 }
+
+ObjString* valueToString(Value value) {
+    switch (value.type) {
+        case VAL_BOOL: {
+            return AS_BOOL(value) ? copyString("true", 4) : copyString("false", 5);
+        }
+        case VAL_NIL: {
+            return copyString("nil", 3);
+        }
+        case VAL_NUMBER: {
+            char buffer[24];
+            int length;
+            if (AS_NUMBER(value) < 1000000) {
+                length = snprintf(buffer, sizeof(buffer), "%g", AS_NUMBER(value));
+            } else {
+                length = snprintf(buffer, sizeof(buffer), "%f", AS_NUMBER(value));
+            }
+            return copyString(buffer, length);
+        }
+        case VAL_OBJ: {
+            if (IS_STRING(value)) {
+                return AS_STRING(value);
+            }
+            // For other objects, return a string representation
+            return copyString("[object]", 8);
+        }
+        default: {
+            return copyString("[unknown]", 9);
+        }
+    }
+}

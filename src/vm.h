@@ -36,6 +36,11 @@ typedef struct {
     int grayCount;
     int grayCapacity;
     Obj** grayStack;
+
+    // Temporary GC roots for native functions
+    Value* tempRoots;
+    int tempRootCount;
+    int tempRootCapacity;
 } VM;
 
 typedef enum {
@@ -51,5 +56,7 @@ void freeVM();
 InterpretResult interpret(const char* source);
 void push(Value value);
 Value pop();
+void pushTempRoot(Value value);
+void popTempRoot();
 
 #endif
