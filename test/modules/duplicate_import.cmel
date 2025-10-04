@@ -1,0 +1,10 @@
+// Test that importing the same module twice doesn't execute it twice
+
+var counter = 0;
+
+import "test/modules/increment_counter";
+import "test/modules/increment_counter";
+
+// Counter should only be 1, not 2
+print counter;
+// expect: 1

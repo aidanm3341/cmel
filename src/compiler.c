@@ -1045,6 +1045,15 @@ static void ifStatement() {
     patchJump(elseJump);
 }
 
+static void importStatement() {
+    consume(TOKEN_STRING, "Expect module path string after 'import'.");
+    uint8_t pathConstant = makeConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+    consume(TOKEN_SEMICOLON, "Expect ';' after import statement.");
+
+    // Emit OP_IMPORT to execute the module file
+    emitBytes(OP_IMPORT, pathConstant);
+}
+
 static void printStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after value.");
@@ -1149,6 +1158,8 @@ static void declaration() {
             error("Cannot define a global const.");
         }
         varDeclaration(true);
+    } else if (match(TOKEN_IMPORT)) {
+        importStatement();
     } else {
         statement();
     }

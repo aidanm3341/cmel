@@ -1,0 +1,8 @@
+import "test/modules/helper";
+
+print message;
+// expect: Hello from helper
+print double(21);
+// expect: 42
+print greet("Cmel");
+// expect: Hello, Cmel

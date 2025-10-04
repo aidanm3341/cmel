@@ -95,6 +95,13 @@ ObjMap* newMap() {
     return map;
 }
 
+ObjModule* newModule(ObjString* name) {
+    ObjModule* module = ALLOCATE_OBJ(ObjModule, OBJ_MODULE);
+    module->name = name;
+    initTable(&module->globals);
+    return module;
+}
+
 void appendToList(ObjList* list, Value value) {
     if (list->capacity < list->count + 1) {
         int oldCapacity = list->capacity;
@@ -253,6 +260,10 @@ void printObject(Value value) {
                 }
             }
             printf("}");
+            break;
+        }
+        case OBJ_MODULE: {
+            printf("<module %s>", AS_MODULE(value)->name->chars);
             break;
         }
     }

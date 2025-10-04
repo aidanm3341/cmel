@@ -1,0 +1,28 @@
+import "stdlib/list";
+
+var numbers = [5, 2, 8, 1, 9];
+
+print sum(numbers);
+// expect: 25
+print contains(numbers, 8);
+// expect: true
+print contains(numbers, 100);
+// expect: false
+
+fun doubleNum(x) { return x * 2; }
+var doubled = map(numbers, doubleNum);
+print doubled;
+// expect: [10, 4, 16, 2, 18]
+
+fun isEven(x) { return x % 2 == 0; }
+var evens = filter(numbers, isEven);
+print evens;
+// expect: [2, 8]
+
+var sorted = sort(numbers);
+print sorted;
+// expect: [1, 2, 5, 8, 9]
+
+var reversed = reverse(numbers);
+print reversed;
+// expect: [9, 1, 8, 2, 5]

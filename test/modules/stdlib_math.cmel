@@ -1,0 +1,16 @@
+import "stdlib/math";
+
+print PI;
+// expect: 3.14159
+print E;
+// expect: 2.71828
+print abs(-42);
+// expect: 42
+print max(10, 20);
+// expect: 20
+print min(10, 20);
+// expect: 10
+print pow(2, 8);
+// expect: 256
+print sqrt(144);
+// expect: 12

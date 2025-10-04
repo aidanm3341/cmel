@@ -281,6 +281,7 @@ void initVM() {
 
     initTable(&vm.globals);
     initTable(&vm.strings);
+    initTable(&vm.modules);
 
     vm.initString = NULL;
     vm.initString = copyString("init", 4);
@@ -314,6 +315,7 @@ void initVM() {
 void freeVM() {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
+    freeTable(&vm.modules);
     vm.stringClass = NULL;
     vm.numberClass = NULL;
     vm.listClass = NULL;
@@ -770,6 +772,19 @@ static InterpretResult run() {
                     }
 
                     break;
+                } else if (IS_MODULE(peek(0))) {
+                    ObjModule* module = AS_MODULE(peek(0));
+                    ObjString* name = READ_STRING();
+
+                    Value value;
+                    if (tableGet(&module->globals, name, &value)) {
+                        pop(); // Pop the module
+                        push(value);
+                        break;
+                    }
+
+                    runtimeError("Module '%s' has no property '%s'.", module->name->chars, name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
                 runtimeError("Only instances have properties");
@@ -1034,6 +1049,76 @@ static InterpretResult run() {
                     runtimeError("Can only store values in lists and maps.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
+                break;
+            }
+            case OP_IMPORT: {
+                ObjString* path = READ_STRING();
+
+                // Check if module is already loaded
+                Value dummy;
+                if (tableGet(&vm.modules, path, &dummy)) {
+                    // Module already loaded, skip
+                    break;
+                }
+
+                // Mark as loaded
+                tableSet(&vm.modules, path, BOOL_VAL(true));
+
+                // Build full path with .cmel extension
+                char fullPath[256];
+                snprintf(fullPath, sizeof(fullPath), "%s.cmel", path->chars);
+
+                // Read module file
+                FILE* file = fopen(fullPath, "rb");
+                if (file == NULL) {
+                    runtimeError("Could not open module file \"%s\".", fullPath);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                fseek(file, 0L, SEEK_END);
+                size_t fileSize = ftell(file);
+                rewind(file);
+
+                char* source = (char*)malloc(fileSize + 1);
+                if (source == NULL) {
+                    fclose(file);
+                    runtimeError("Not enough memory to read module \"%s\".", fullPath);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                size_t bytesRead = fread(source, sizeof(char), fileSize, file);
+                if (bytesRead < fileSize) {
+                    free(source);
+                    fclose(file);
+                    runtimeError("Could not read module \"%s\".", fullPath);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                source[bytesRead] = '\0';
+                fclose(file);
+
+                // Compile the module
+                ObjFunction* moduleFunction = compile(source);
+                free(source);
+
+                if (moduleFunction == NULL) {
+                    runtimeError("Failed to compile module \"%s\".", fullPath);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                // Set up the module function as a call
+                push(OBJ_VAL(moduleFunction));
+                ObjClosure* moduleClosure = newClosure(moduleFunction);
+                pop();
+                push(OBJ_VAL(moduleClosure));
+
+                if (!call(moduleClosure, 0)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                // Update frame pointer since we added a new call frame
+                frame = &vm.frames[vm.frameCount - 1];
+
+                // The module will execute inline in the run loop
                 break;
             }
             case OP_PLACEHOLDER: {

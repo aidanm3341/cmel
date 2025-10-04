@@ -1,0 +1,11 @@
+// Test helper module
+
+var message = "Hello from helper";
+
+fun double(x) {
+    return x * 2;
+}
+
+fun greet(name) {
+    return "Hello, " + name;
+}

@@ -18,6 +18,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Modulo operator
 - String escape sequences (`\n`, `\t`, `\r`, `\"`, `\\`)
 - Automatic type-to-string conversion with the `+` operator
+- Module system with `import` statement and standard library
 
 ### Primitive Types
 
@@ -51,6 +52,24 @@ Here are the features which separate `Cmel` from `Lox`.
 - `readFile(path)` returns the content of the given path as a String
 - `number(val)` returns a number representation of the given value. Only numbers, booleans and strings may be passed
 
+### Module System
+
+Import `.cmel` files using the `import` statement:
+
+```cmel
+import "stdlib/math";
+
+print PI;        // 3.14159
+print sqrt(16);  // 4
+```
+
+Modules are executed once and cached. All variables and functions defined in the module become globally available.
+
+**Standard Library:**
+- `stdlib/math.cmel` - Mathematical constants and functions (PI, E, abs, max, min, pow, sqrt)
+- `stdlib/string.cmel` - String utilities (join, reverse, startsWith, endsWith)
+- `stdlib/list.cmel` - List algorithms (sum, filter, map, find, contains, reverse, sort)
+
 ## Usage
 
 Compile the project using
@@ -73,11 +92,13 @@ or execute a file by passing it the path
 
 ## Testing
 
-To test the code, first build the executable using the build script, then navigate to the test folder and run
+To test the code, first build the executable using the build script, then run
 
 ```
-node --test
+node cmel.test.mjs
 ```
+
+Tests use inline expectations with `// expect:` comments. The test suite includes 78 tests covering all language features including the module system.
 
 ## Todo
 

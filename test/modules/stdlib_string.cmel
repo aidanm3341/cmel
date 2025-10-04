@@ -1,0 +1,16 @@
+import "stdlib/string";
+
+var fruits = ["apple", "banana", "cherry"];
+print join(fruits, ", ");
+// expect: apple, banana, cherry
+
+print reverse("hello");
+// expect: olleh
+print startsWith("hello world", "hello");
+// expect: true
+print startsWith("hello world", "world");
+// expect: false
+print endsWith("hello world", "world");
+// expect: true
+print endsWith("hello world", "hello");
+// expect: false
