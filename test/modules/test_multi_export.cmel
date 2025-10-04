@@ -1,0 +1,14 @@
+fun add(a, b) {
+    return a + b;
+}
+
+fun subtract(a, b) {
+    return a - b;
+}
+
+fun multiply(a, b) {
+    return a * b;
+}
+
+var PI = 3.14159;
+var E = 2.71828;

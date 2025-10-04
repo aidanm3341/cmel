@@ -1,4 +1,4 @@
-import "stdlib/list";
+import sum, contains, map, filter, sort, reverse from "stdlib/list";
 
 var numbers = [5, 2, 8, 1, 9];
 

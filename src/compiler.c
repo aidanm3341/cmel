@@ -1046,12 +1046,45 @@ static void ifStatement() {
 }
 
 static void importStatement() {
-    consume(TOKEN_STRING, "Expect module path string after 'import'.");
-    uint8_t pathConstant = makeConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
-    consume(TOKEN_SEMICOLON, "Expect ';' after import statement.");
+    // Check if this is a named import (identifier before 'from')
+    if (check(TOKEN_IDENTIFIER)) {
+        // Named import: import <name1>, <name2>, ... from "module"
+        // Collect all the names first
+        uint8_t names[256];
+        int nameCount = 0;
 
-    // Emit OP_IMPORT to execute the module file
-    emitBytes(OP_IMPORT, pathConstant);
+        do {
+            consume(TOKEN_IDENTIFIER, "Expect variable name.");
+            if (nameCount >= 256) {
+                error("Too many imports in a single statement.");
+                return;
+            }
+            names[nameCount++] = identiferConstant(&parser.previous);
+        } while (match(TOKEN_COMMA));
+
+        // Now expect 'from'
+        consume(TOKEN_FROM, "Expect 'from' after import names.");
+
+        // Get the module path
+        consume(TOKEN_STRING, "Expect module path string after 'from'.");
+        uint8_t pathConstant = makeConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+
+        consume(TOKEN_SEMICOLON, "Expect ';' after import statement.");
+
+        // Emit OP_IMPORT_FROM for each name
+        for (int i = 0; i < nameCount; i++) {
+            emitBytes(OP_IMPORT_FROM, pathConstant);
+            emitByte(names[i]);
+        }
+    } else {
+        // Wildcard import: import "module"
+        consume(TOKEN_STRING, "Expect module path string after 'import'.");
+        uint8_t pathConstant = makeConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+        consume(TOKEN_SEMICOLON, "Expect ';' after import statement.");
+
+        // Emit OP_IMPORT to execute the module file
+        emitBytes(OP_IMPORT, pathConstant);
+    }
 }
 
 static void printStatement() {

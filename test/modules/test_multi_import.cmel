@@ -1,0 +1,10 @@
+import add, subtract, PI from "test/modules/test_multi_export";
+
+print add(5, 3);
+// expect: 8
+
+print subtract(10, 4);
+// expect: 6
+
+print PI;
+// expect: 3.14159

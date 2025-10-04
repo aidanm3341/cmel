@@ -1,4 +1,4 @@
-import "stdlib/string";
+import join, reverse, startsWith, endsWith from "stdlib/string";
 
 var fruits = ["apple", "banana", "cherry"];
 print join(fruits, ", ");

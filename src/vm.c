@@ -591,8 +591,12 @@ static void concatenateWithConversion() {
     concatenate();
 }
 
+// Forward declaration
+static ObjModule* loadModule(const char* path);
+
 static InterpretResult run() {
     CallFrame* frame = &vm.frames[vm.frameCount - 1];
+    int initialFrameCount = vm.frameCount;
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_CONSTANT() (frame->closure->function->chunk.constants.values[READ_BYTE()])
@@ -611,7 +615,10 @@ static InterpretResult run() {
     } while (false)
 
     for (;;) {
-#ifdef DEBUG_TRACE_EXECUTION   
+        // Reload frame pointer in case frames array was reallocated
+        frame = &vm.frames[vm.frameCount - 1];
+
+#ifdef DEBUG_TRACE_EXECUTION
         printf("        ");
         for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
             printf("[ ");
@@ -622,7 +629,8 @@ static InterpretResult run() {
         disassembleInstruction(&frame->closure->function->chunk, (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
         uint8_t instruction;
-        switch (instruction = READ_BYTE()) {
+        instruction = READ_BYTE();
+        switch (instruction) {
             case OP_ADD: {
                 if (IS_STRING(peek(0)) || IS_STRING(peek(1))) {
                     concatenateWithConversion();
@@ -886,7 +894,9 @@ static InterpretResult run() {
                 Value result = pop();
                 closeUpvalues(frame->slots);
                 vm.frameCount--;
-                if (vm.frameCount == 0) {
+
+                // Return from run() when we've popped back to the initial frame count
+                if (vm.frameCount < initialFrameCount) {
                     pop();
                     return INTERPRET_OK;
                 }
@@ -969,15 +979,6 @@ static InterpretResult run() {
                 Value obj = pop();
                 Value result;
 
-                // DEBUG: Check what obj actually is
-                if (!IS_LIST(obj) && !IS_MAP(obj)) {
-                    fprintf(stderr, "DEBUG OP_INDEX: obj type=%d, IS_STRING=%d, IS_NUMBER=%d\n",
-                            obj.type, IS_STRING(obj), IS_NUMBER(obj));
-                    if (IS_OBJ(obj)) {
-                        fprintf(stderr, "  OBJ_TYPE=%d\n", OBJ_TYPE(obj));
-                    }
-                }
-
                 if (IS_LIST(obj)) {
                     ObjList* list = AS_LIST(obj);
 
@@ -1054,71 +1055,60 @@ static InterpretResult run() {
             case OP_IMPORT: {
                 ObjString* path = READ_STRING();
 
-                // Check if module is already loaded
-                Value dummy;
-                if (tableGet(&vm.modules, path, &dummy)) {
-                    // Module already loaded, skip
-                    break;
-                }
-
-                // Mark as loaded
-                tableSet(&vm.modules, path, BOOL_VAL(true));
-
-                // Build full path with .cmel extension
-                char fullPath[256];
-                snprintf(fullPath, sizeof(fullPath), "%s.cmel", path->chars);
-
-                // Read module file
-                FILE* file = fopen(fullPath, "rb");
-                if (file == NULL) {
-                    runtimeError("Could not open module file \"%s\".", fullPath);
+                // Load the module (uses caching internally)
+                ObjModule* module = loadModule(path->chars);
+                if (module == NULL) {
+                    runtimeError("Failed to load module \"%s\".", path->chars);
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
-                fseek(file, 0L, SEEK_END);
-                size_t fileSize = ftell(file);
-                rewind(file);
-
-                char* source = (char*)malloc(fileSize + 1);
-                if (source == NULL) {
-                    fclose(file);
-                    runtimeError("Not enough memory to read module \"%s\".", fullPath);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                size_t bytesRead = fread(source, sizeof(char), fileSize, file);
-                if (bytesRead < fileSize) {
-                    free(source);
-                    fclose(file);
-                    runtimeError("Could not read module \"%s\".", fullPath);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                source[bytesRead] = '\0';
-                fclose(file);
-
-                // Compile the module
-                ObjFunction* moduleFunction = compile(source);
-                free(source);
-
-                if (moduleFunction == NULL) {
-                    runtimeError("Failed to compile module \"%s\".", fullPath);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                // Set up the module function as a call
-                push(OBJ_VAL(moduleFunction));
-                ObjClosure* moduleClosure = newClosure(moduleFunction);
-                pop();
-                push(OBJ_VAL(moduleClosure));
-
-                if (!call(moduleClosure, 0)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                // Update frame pointer since we added a new call frame
+                // Update frame pointer (loadModule calls run() recursively)
                 frame = &vm.frames[vm.frameCount - 1];
 
-                // The module will execute inline in the run loop
+                // Import all exports into current global scope
+                for (int i = 0; i < module->globals.capacity; i++) {
+                    Entry* entry = &module->globals.entries[i];
+                    if (entry->key != NULL) {
+                        tableSet(&vm.globals, entry->key, entry->value);
+                    }
+                }
+
+                break;
+            }
+            case OP_IMPORT_FROM: {
+                ObjString* path = READ_STRING();
+                ObjString* name = READ_STRING();
+
+                // Load the module (uses caching internally)
+                ObjModule* module = loadModule(path->chars);
+                if (module == NULL) {
+                    runtimeError("Failed to load module \"%s\".", path->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                // Update frame pointer (loadModule calls run() recursively)
+                frame = &vm.frames[vm.frameCount - 1];
+
+                // Check that the named export exists
+                Value value;
+                if (!tableGet(&module->globals, name, &value)) {
+                    runtimeError("Module '%s' has no export '%s'.", path->chars, name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                // Import all module globals so that the imported function can access them
+                // This is necessary because functions access globals dynamically,
+                // not through closures
+                for (int i = 0; i < module->globals.capacity; i++) {
+                    Entry* entry = &module->globals.entries[i];
+                    if (entry->key != NULL) {
+                        // Skip natives and classes as they're already in parent scope
+                        if (!IS_NATIVE(entry->value) && !IS_CLASS(entry->value)) {
+                            tableSet(&vm.globals, entry->key, entry->value);
+                        }
+                    }
+                }
+
                 break;
             }
             case OP_PLACEHOLDER: {
@@ -1134,6 +1124,110 @@ static InterpretResult run() {
 #undef READ_CONSTANT
 #undef READ_SHORT
 #undef READ_BYTE
+}
+
+static ObjModule* loadModule(const char* path) {
+
+    // Check if module is already loaded
+    ObjString* pathString = copyString(path, (int)strlen(path));
+    Value cachedModule;
+    if (tableGet(&vm.modules, pathString, &cachedModule)) {
+        return AS_MODULE(cachedModule);
+    }
+
+
+    // Build full path with .cmel extension
+    char fullPath[256];
+    snprintf(fullPath, sizeof(fullPath), "%s.cmel", path);
+
+    // Read module file
+    FILE* file = fopen(fullPath, "rb");
+    if (file == NULL) {
+        fprintf(stderr, "Could not open module file \"%s\".\n", fullPath);
+        return NULL;
+    }
+
+    fseek(file, 0L, SEEK_END);
+    size_t fileSize = ftell(file);
+    rewind(file);
+
+    char* source = (char*)malloc(fileSize + 1);
+    if (source == NULL) {
+        fclose(file);
+        fprintf(stderr, "Not enough memory to read module \"%s\".\n", fullPath);
+        return NULL;
+    }
+
+    size_t bytesRead = fread(source, sizeof(char), fileSize, file);
+    if (bytesRead < fileSize) {
+        free(source);
+        fclose(file);
+        fprintf(stderr, "Could not read module \"%s\".\n", fullPath);
+        return NULL;
+    }
+    source[bytesRead] = '\0';
+    fclose(file);
+
+    // Compile the module
+    ObjFunction* moduleFunction = compile(source);
+    free(source);
+
+    if (moduleFunction == NULL) {
+        fprintf(stderr, "Failed to compile module \"%s\".\n", fullPath);
+        return NULL;
+    }
+
+    // Save current globals and stack pointer
+    Table savedGlobals = vm.globals;
+    Value* savedStackTop = vm.stackTop;
+
+    // Create fresh globals table for module
+    initTable(&vm.globals);
+
+    // Copy native functions and classes into module's globals
+    // so modules can use built-in functions
+    for (int i = 0; i < savedGlobals.capacity; i++) {
+        Entry* entry = &savedGlobals.entries[i];
+        if (entry->key != NULL) {
+            // Copy natives and classes, but not user-defined globals
+            if (IS_NATIVE(entry->value) || IS_CLASS(entry->value)) {
+                tableSet(&vm.globals, entry->key, entry->value);
+            }
+        }
+    }
+
+    // Execute module in isolated scope
+    push(OBJ_VAL(moduleFunction));
+    ObjClosure* moduleClosure = newClosure(moduleFunction);
+    pop();
+    push(OBJ_VAL(moduleClosure));
+    call(moduleClosure, 0);
+
+    InterpretResult result = run();
+
+    if (result != INTERPRET_OK) {
+        freeTable(&vm.globals);
+        vm.globals = savedGlobals;
+        vm.stackTop = savedStackTop;
+        return NULL;
+    }
+
+    // Pop return value
+    pop();
+
+    // Create module object with captured globals
+    ObjModule* module = newModule(pathString);
+    tableAddAll(&vm.globals, &module->globals);
+
+    // Restore original globals and stack pointer
+    freeTable(&vm.globals);
+    vm.globals = savedGlobals;
+    vm.stackTop = savedStackTop;
+
+    // Cache the module
+    tableSet(&vm.modules, pathString, OBJ_VAL(module));
+
+    return module;
 }
 
 InterpretResult interpret(const char* source) {
