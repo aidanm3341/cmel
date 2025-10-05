@@ -1,0 +1,3 @@
+var numbers = [1, 2, 3];
+var doubled = numbers.map(fun(x) { return x * 2; });
+print doubled;

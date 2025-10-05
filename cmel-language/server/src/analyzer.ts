@@ -459,6 +459,9 @@ export class Analyzer {
         this.visitExpression(expr.left);
         this.visitExpression(expr.right);
         break;
+      case 'LambdaExpression':
+        this.visitLambdaExpression(expr);
+        break;
     }
   }
 
@@ -513,5 +516,32 @@ export class Analyzer {
     if (this.inClass === 0) {
       this.addDiagnostic('Cannot use super outside of a class', expr, 'error');
     }
+  }
+
+  private visitLambdaExpression(expr: AST.LambdaExpression): void {
+    // Create new scope for lambda body
+    const previousScope = this.currentScope;
+    this.currentScope = new Scope(previousScope);
+    this.inFunction++;
+
+    // Add parameters to lambda scope
+    for (const param of expr.params) {
+      const paramSymbol: Symbol = {
+        name: param.lexeme,
+        kind: 'parameter',
+        isConst: false,
+        isExport: false,
+        declarationNode: expr,
+        declarationToken: param,
+        scope: this.currentScope,
+      };
+      this.currentScope.define(paramSymbol);
+      this.symbols.set(`<lambda>.${param.lexeme}`, paramSymbol);
+    }
+
+    this.visitBlockStatement(expr.body);
+
+    this.inFunction--;
+    this.currentScope = previousScope;
   }
 }

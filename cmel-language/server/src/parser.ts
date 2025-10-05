@@ -633,6 +633,11 @@ export class Parser {
   }
 
   private primary(): AST.Expression {
+    // Lambda expression
+    if (this.match(TokenType.FUN)) {
+      return this.lambdaExpression();
+    }
+
     if (this.match(TokenType.FALSE)) {
       const token = this.previous();
       return {
@@ -786,6 +791,33 @@ export class Parser {
       entries,
       start,
       end: endBrace.end,
+      line: this.previous().line
+    };
+  }
+
+  private lambdaExpression(): AST.LambdaExpression {
+    const start = this.previous().start;
+
+    this.consume(TokenType.LEFT_PAREN, 'Expected ( after fun');
+    const params: Token[] = [];
+
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      do {
+        params.push(this.consume(TokenType.IDENTIFIER, 'Expected parameter name'));
+      } while (this.match(TokenType.COMMA));
+    }
+
+    this.consume(TokenType.RIGHT_PAREN, 'Expected ) after parameters');
+    this.consume(TokenType.LEFT_BRACE, 'Expected { before lambda body');
+
+    const body = this.blockStatement();
+
+    return {
+      kind: 'LambdaExpression',
+      params,
+      body,
+      start,
+      end: body.end,
       line: this.previous().line
     };
   }

@@ -118,7 +118,8 @@ export type Expression =
   | ListExpression
   | MapExpression
   | SubscriptExpression
-  | LogicalExpression;
+  | LogicalExpression
+  | LambdaExpression;
 
 export interface BinaryExpression extends ASTNode {
   kind: 'BinaryExpression';
@@ -202,4 +203,10 @@ export interface LogicalExpression extends ASTNode {
   left: Expression;
   operator: Token;
   right: Expression;
+}
+
+export interface LambdaExpression extends ASTNode {
+  kind: 'LambdaExpression';
+  params: Token[];
+  body: BlockStatement;
 }

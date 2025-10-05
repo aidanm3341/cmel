@@ -1,0 +1,9 @@
+var makeAdder = fun(x) {
+    return fun(y) {
+        return x + y;
+    };
+};
+
+var add5 = makeAdder(5);
+print add5(3);
+print add5(10);

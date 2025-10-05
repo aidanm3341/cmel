@@ -279,6 +279,7 @@ static void parsePrecedence(Precedence precedence);
 static int resolveLocal(Compiler* compiler, Token* name);
 static uint8_t argumentList();
 static int resolveUpvalue(Compiler* compiler, Token* name);
+static void lambda(bool canAssign);
 
 static void binary(bool canAssign) {
     TokenType operatorType = parser.previous.type;
@@ -598,7 +599,7 @@ ParseRule rules[] = {
   [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
   [TOKEN_FALSE]         = {literal,  NULL,   PREC_NONE},
   [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_FUN]           = {lambda,   NULL,   PREC_NONE},
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_NIL]           = {literal,  NULL,   PREC_NONE},
   [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
@@ -787,6 +788,35 @@ static void function(FunctionType type) {
     beginScope();
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+    if (!check(TOKEN_RIGHT_PAREN)) {
+        do {
+            current->function->arity++;
+            if (current->function->arity > 255) {
+                errorAtCurrent("Can't have more than 255 parameters.");
+            }
+            uint8_t constant = parseVariable("Expect parameter name.", false);
+            defineVariable(constant);
+        } while (match(TOKEN_COMMA));
+    }
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+    block();
+
+    ObjFunction* function = endCompiler();
+    emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+
+    for (int i = 0; i < function->upvalueCount; i++) {
+        emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
+        emitByte(compiler.upvalues[i].index);
+    }
+}
+
+static void lambda(bool canAssign) {
+    Compiler compiler;
+    initCompiler(&compiler, TYPE_FUNCTION);
+    beginScope();
+
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'fun'.");
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
             current->function->arity++;
