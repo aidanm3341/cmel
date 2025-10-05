@@ -1,73 +1,71 @@
-// List utilities
-
-export fun sum(list) {
-    var total = 0;
-    for (var i = 0; i < list.length(); i = i + 1) {
-        total = total + list[i];
+export fun createListWithDefaults(defaultElement, size) {
+    var newList = [];
+    for (var i = 0; i < size; i = i+1) {
+        newList.add(defaultElement);
     }
-    return total;
+    return newList;
 }
 
-export fun filter(list, predicate) {
-    var result = [];
-    for (var i = 0; i < list.length(); i = i + 1) {
-        if (predicate(list[i])) {
-            result.add(list[i]);
+fun merge(nums, left, mid, right) {
+    var n1 = mid - left + 1;
+    var n2 = right - mid;
+
+    var leftTmp = createListWithDefaults(0, n1);
+    var rightTmp = createListWithDefaults(0, n2);
+
+    for (var i = 0; i < n1; i = i+1) {
+        leftTmp[i] = nums[left + i];
+    }
+    for (var i = 0; i < n2; i = i+1) {
+        rightTmp[i] = nums[mid + 1 + i];
+    }
+
+    var i = 0;
+    var j = 0;
+    var k = left;
+
+    while (i < n1 and j < n2) {
+        if (leftTmp[i] <= rightTmp[j]) {
+            nums[k] = leftTmp[i];
+            i = i + 1;
+        } else {
+            nums[k] = rightTmp[j];
+            j = j + 1;
         }
+        k = k + 1;
     }
-    return result;
+
+    while (i < n1) {
+        nums[k] = leftTmp[i];
+        i = i + 1;
+        k = k + 1;
+    }
+
+    while (j < n2) {
+        nums[k] = rightTmp[j];
+        j = j + 1;
+        k = k + 1;
+    }
+
+    return nums;
 }
 
-export fun map(list, transform) {
-    var result = [];
-    for (var i = 0; i < list.length(); i = i + 1) {
-        result.add(transform(list[i]));
+fun mergeSort(nums, left, right) {
+    if (left < right) {
+        var mid = left + (right - left) / 2;
+        // floor the number. Needs better approach
+        mid = "" + mid;
+        mid = mid.split(".");
+        mid = number(mid[0]);
+
+        mergeSort(nums, left, mid);
+        mergeSort(nums, mid + 1, right);
+
+        return merge(nums, left, mid, right);
     }
-    return result;
+    return nums;
 }
 
-export fun find(list, predicate) {
-    for (var i = 0; i < list.length(); i = i + 1) {
-        if (predicate(list[i])) {
-            return list[i];
-        }
-    }
-    return nil;
-}
-
-export fun contains(list, value) {
-    for (var i = 0; i < list.length(); i = i + 1) {
-        if (list[i] == value) {
-            return true;
-        }
-    }
-    return false;
-}
-
-export fun reverse(list) {
-    var result = [];
-    for (var i = list.length() - 1; i >= 0; i = i - 1) {
-        result.add(list[i]);
-    }
-    return result;
-}
-
-export fun sort(list) {
-    // Simple bubble sort
-    var arr = [];
-    for (var i = 0; i < list.length(); i = i + 1) {
-        arr.add(list[i]);
-    }
-
-    for (var i = 0; i < arr.length() - 1; i = i + 1) {
-        for (var j = 0; j < arr.length() - i - 1; j = j + 1) {
-            if (arr[j] > arr[j + 1]) {
-                var temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-            }
-        }
-    }
-
-    return arr;
+export fun sort(nums) {
+    return mergeSort(nums, 0, nums.length() - 1);
 }

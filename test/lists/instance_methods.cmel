@@ -1,0 +1,37 @@
+// Test List instance methods
+
+var nums = [1, 2, 3, 4, 5];
+
+// Test contains
+print nums.contains(3);
+// expect: true
+
+print nums.contains(10);
+// expect: false
+
+// Test reverse
+print nums.reverse();
+// expect: [5, 4, 3, 2, 1]
+
+// Test sum
+print nums.sum();
+// expect: 15
+
+// Test map
+fun double(x) { return x * 2; }
+print nums.map(double);
+// expect: [2, 4, 6, 8, 10]
+
+// Test filter
+fun isEven(x) { return x % 2 == 0; }
+print nums.filter(isEven);
+// expect: [2, 4]
+
+// Test find
+fun greaterThan3(x) { return x > 3; }
+print nums.find(greaterThan3);
+// expect: 4
+
+// Test chaining
+print nums.map(double).filter(isEven);
+// expect: [2, 4, 6, 8, 10]

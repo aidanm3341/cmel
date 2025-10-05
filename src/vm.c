@@ -14,6 +14,13 @@
 
 VM vm;
 
+// Forward declarations
+static Value peek(int distance);
+static bool call(ObjClosure* closure, int argCount);
+static InterpretResult run();
+static bool callValue(Value callee, int argCount);
+static bool isFalsey(Value value);
+
 static Value clockNative(int argCount, Value* args) {
     return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
@@ -122,6 +129,163 @@ static Value removeListNative(int argCount, Value* args) {
 
 static Value listLengthNative(int argCount, Value* args) {
     return NUMBER_VAL(AS_LIST(args[0])->count);
+}
+
+static Value listMapNative(int argCount, Value* args) {
+    Value transform = args[0];
+    ObjList* list = AS_LIST(args[1]);
+
+    if (!IS_CLOSURE(transform)) {
+        runtimeError("Argument to map must be a function.");
+        return ERROR_VAL();
+    }
+
+    ObjList* result = newList();
+    pushTempRoot(OBJ_VAL(result));
+
+    for (int i = 0; i < list->count; i++) {
+        // Push closure and argument
+        push(transform);
+        push(list->items[i]);
+
+        // Set up the call
+        ObjClosure* closure = AS_CLOSURE(transform);
+        if (!call(closure, 1)) {
+            popTempRoot();
+            return ERROR_VAL();
+        }
+
+        // Execute the call
+        if (run() != INTERPRET_OK) {
+            popTempRoot();
+            return ERROR_VAL();
+        }
+
+        // Get the result
+        Value mapped = pop();
+        appendToList(result, mapped);
+    }
+
+    popTempRoot();
+    return OBJ_VAL(result);
+}
+
+static Value listFilterNative(int argCount, Value* args) {
+    Value predicate = args[0];
+    ObjList* list = AS_LIST(args[1]);
+
+    if (!IS_CLOSURE(predicate)) {
+        runtimeError("Argument to filter must be a function.");
+        return ERROR_VAL();
+    }
+
+    ObjList* result = newList();
+    pushTempRoot(OBJ_VAL(result));
+
+    for (int i = 0; i < list->count; i++) {
+        // Push closure and argument
+        push(predicate);
+        push(list->items[i]);
+
+        // Set up the call
+        ObjClosure* closure = AS_CLOSURE(predicate);
+        if (!call(closure, 1)) {
+            popTempRoot();
+            return ERROR_VAL();
+        }
+
+        // Execute the call
+        if (run() != INTERPRET_OK) {
+            popTempRoot();
+            return ERROR_VAL();
+        }
+
+        // Get the result
+        Value filterResult = pop();
+        if (!isFalsey(filterResult)) {
+            appendToList(result, list->items[i]);
+        }
+    }
+
+    popTempRoot();
+    return OBJ_VAL(result);
+}
+
+static Value listFindNative(int argCount, Value* args) {
+    Value predicate = args[0];
+    ObjList* list = AS_LIST(args[1]);
+
+    if (!IS_CLOSURE(predicate)) {
+        runtimeError("Argument to find must be a function.");
+        return ERROR_VAL();
+    }
+
+    for (int i = 0; i < list->count; i++) {
+        // Push closure and argument
+        push(predicate);
+        push(list->items[i]);
+
+        // Set up the call
+        ObjClosure* closure = AS_CLOSURE(predicate);
+        if (!call(closure, 1)) {
+            return ERROR_VAL();
+        }
+
+        // Execute the call
+        if (run() != INTERPRET_OK) {
+            return ERROR_VAL();
+        }
+
+        // Get the result
+        Value findResult = pop();
+        if (!isFalsey(findResult)) {
+            return list->items[i];
+        }
+    }
+
+    return NIL_VAL;
+}
+
+static Value listContainsNative(int argCount, Value* args) {
+    Value value = args[0];
+    ObjList* list = AS_LIST(args[1]);
+
+    for (int i = 0; i < list->count; i++) {
+        if (valuesEqual(list->items[i], value)) {
+            return BOOL_VAL(true);
+        }
+    }
+
+    return BOOL_VAL(false);
+}
+
+static Value listReverseNative(int argCount, Value* args) {
+    ObjList* list = AS_LIST(args[0]);
+
+    ObjList* result = newList();
+    pushTempRoot(OBJ_VAL(result));
+
+    for (int i = list->count - 1; i >= 0; i--) {
+        appendToList(result, list->items[i]);
+    }
+
+    popTempRoot();
+    return OBJ_VAL(result);
+}
+
+static Value listSumNative(int argCount, Value* args) {
+    ObjList* list = AS_LIST(args[0]);
+    double total = 0;
+
+    for (int i = 0; i < list->count; i++) {
+        if (!IS_NUMBER(list->items[i])) {
+            runtimeError("List contains non-numeric value.");
+            return ERROR_VAL();
+        }
+        total += AS_NUMBER(list->items[i]);
+    }
+
+    return NUMBER_VAL(total);
 }
 
 static Value mapKeysNative(int argCount, Value* args) {
@@ -304,6 +468,12 @@ void initVM() {
     definePrimitive(vm.listClass, "add", addListNative, 2);
     definePrimitive(vm.listClass, "remove", removeListNative, 2);
     definePrimitive(vm.listClass, "length", listLengthNative, 1);
+    definePrimitive(vm.listClass, "map", listMapNative, 2);
+    definePrimitive(vm.listClass, "filter", listFilterNative, 2);
+    definePrimitive(vm.listClass, "find", listFindNative, 2);
+    definePrimitive(vm.listClass, "contains", listContainsNative, 2);
+    definePrimitive(vm.listClass, "reverse", listReverseNative, 1);
+    definePrimitive(vm.listClass, "sum", listSumNative, 1);
 
     vm.mapClass = newClass(copyString("Map", 3));
     definePrimitive(vm.mapClass, "keys", mapKeysNative, 1);
@@ -925,7 +1095,8 @@ static InterpretResult run() {
 
                 // Return from run() when we've popped back to the initial frame count
                 if (vm.frameCount < initialFrameCount) {
-                    pop();
+                    pop();  // Pop the closure
+                    push(result);  // Push the return value for the caller
                     return INTERPRET_OK;
                 }
 

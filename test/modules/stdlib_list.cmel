@@ -1,21 +1,24 @@
-import sum, contains, map, filter, sort, reverse from "stdlib/list";
+// Test built-in List instance methods
+// Only import sort since it's the only non-built-in method now
+import sort from "stdlib/list";
 
 var numbers = [5, 2, 8, 1, 9];
 
-print sum(numbers);
+// Test built-in instance methods
+print numbers.sum();
 // expect: 25
-print contains(numbers, 8);
+print numbers.contains(8);
 // expect: true
-print contains(numbers, 100);
+print numbers.contains(100);
 // expect: false
 
 fun doubleNum(x) { return x * 2; }
-var doubled = map(numbers, doubleNum);
+var doubled = numbers.map(doubleNum);
 print doubled;
 // expect: [10, 4, 16, 2, 18]
 
 fun isEven(x) { return x % 2 == 0; }
-var evens = filter(numbers, isEven);
+var evens = numbers.filter(isEven);
 print evens;
 // expect: [2, 8]
 
@@ -23,6 +26,7 @@ var sorted = sort(numbers);
 print sorted;
 // expect: [1, 2, 5, 8, 9]
 
-var reversed = reverse(numbers);
+// Note: reverse() is called on the sorted list since sort() mutates in place
+var reversed = numbers.reverse();
 print reversed;
-// expect: [9, 1, 8, 2, 5]
+// expect: [9, 8, 5, 2, 1]
