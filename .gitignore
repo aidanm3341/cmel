@@ -32,3 +32,6 @@ bin/
 
 ### Cmel ###
 cmel
+
+### NPM ###
+node_modules/

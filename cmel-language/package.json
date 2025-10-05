@@ -1,38 +1,62 @@
 {
   "name": "cmel-language",
   "displayName": "Cmel Language",
-  "description": "",
+  "description": "Language support for Cmel with IntelliSense, go to definition, and more",
   "repository": {
     "url": "https://github.com/aidanm3341/cmel"
   },
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.93.0"
+    "vscode": "^1.104.0"
   },
   "categories": [
     "Programming Languages"
   ],
+  "activationEvents": [
+    "onLanguage:cmel"
+  ],
+  "main": "./out/client/src/extension.js",
   "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
     "package": "vsce package"
   },
   "devDependencies": {
-    "@vscode/vsce": "^3.2.1"
+    "@types/node": "^24.6.2",
+    "@types/vscode": "^1.104.0",
+    "@vscode/vsce": "^3.2.1",
+    "typescript": "^5.9.3"
   },
   "contributes": {
-    "languages": [{
-      "id": "cmel",
-      "aliases": ["Cmel", "cmel"],
-      "extensions": [".cmel"],
-      "configuration": "./language-configuration.json",
-      "icon": {
-        "dark": "cat-logo.png",
-        "light": "cat-logo.png"
+    "languages": [
+      {
+        "id": "cmel",
+        "aliases": [
+          "Cmel",
+          "cmel"
+        ],
+        "extensions": [
+          ".cmel"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "dark": "cat-logo.png",
+          "light": "cat-logo.png"
+        }
       }
-    }],
-    "grammars": [{
-      "language": "cmel",
-      "scopeName": "source.cmel",
-      "path": "./syntaxes/cmel.tmLanguage.json"
-    }]
+    ],
+    "grammars": [
+      {
+        "language": "cmel",
+        "scopeName": "source.cmel",
+        "path": "./syntaxes/cmel.tmLanguage.json"
+      }
+    ]
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
   }
 }
