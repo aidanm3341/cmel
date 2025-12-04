@@ -1,0 +1,18 @@
+// Basic charAt
+print "hello".charAt(0);
+// expect: h
+
+print "hello".charAt(4);
+// expect: o
+
+// Negative indices
+print "world".charAt(-1);
+// expect: d
+
+print "world".charAt(-5);
+// expect: w
+
+// Store and call later
+var getChar = "test".charAt;
+print getChar(1);
+// expect: e

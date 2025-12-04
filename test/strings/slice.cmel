@@ -1,0 +1,24 @@
+// Basic slice with end
+print "hello world".slice(0, 5);
+// expect: hello
+
+print "hello world".slice(6, 11);
+// expect: world
+
+// Slice to end (no second parameter)
+print "testing".slice(4);
+// expect: ing
+
+// Negative indices
+print "hello".slice(-3);
+// expect: llo
+
+print "hello".slice(1, -1);
+// expect: ell
+
+// Edge cases
+print "test".slice(0, 0);
+// expect:
+
+print "test".slice(2, 2);
+// expect:

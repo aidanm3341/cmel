@@ -1,0 +1,2 @@
+print "test".slice(0, "b");
+// expect error: slice() end index must be a number.\n[line 1] in script

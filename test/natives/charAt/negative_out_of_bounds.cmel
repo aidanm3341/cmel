@@ -1,0 +1,2 @@
+print "hi".charAt(-5);
+// expect error: String index out of range.\n[line 1] in script

@@ -397,6 +397,71 @@ static Value stringSplitNative(int argCount, Value* args) {
     return OBJ_VAL(list);
 }
 
+static Value charAtNative(int argCount, Value* args) {
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("charAt() index must be a number.");
+        return ERROR_VAL();
+    }
+
+    ObjString* string = AS_STRING(args[1]);
+    int index = (int)AS_NUMBER(args[0]);
+
+    // Handle negative indices
+    if (index < 0) {
+        index = string->length + index;
+    }
+
+    // Bounds checking
+    if (index < 0 || index >= string->length) {
+        runtimeError("String index out of range.");
+        return ERROR_VAL();
+    }
+
+    // Return single character as a new string
+    ObjString* result = copyString(string->chars + index, 1);
+    return OBJ_VAL(result);
+}
+
+static Value sliceNative(int argCount, Value* args) {
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("slice() start index must be a number.");
+        return ERROR_VAL();
+    }
+
+    ObjString* string = AS_STRING(args[argCount - 1]);
+    int start = (int)AS_NUMBER(args[0]);
+    int end = string->length;  // Default to string length
+
+    // Handle optional end parameter
+    if (argCount == 3) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError("slice() end index must be a number.");
+            return ERROR_VAL();
+        }
+        end = (int)AS_NUMBER(args[1]);
+    }
+
+    // Handle negative indices
+    if (start < 0) {
+        start = string->length + start;
+    }
+    if (end < 0) {
+        end = string->length + end;
+    }
+
+    // Clamp to valid range
+    if (start < 0) start = 0;
+    if (end > string->length) end = string->length;
+    if (start > end) start = end;
+
+    // Calculate length and create substring
+    int length = end - start;
+    if (length < 0) length = 0;
+
+    ObjString* result = copyString(string->chars + start, length);
+    return OBJ_VAL(result);
+}
+
 static Value numberNative(int argCount, Value* args) {
     Value val = args[0];
     if (IS_NUMBER(val)) {
@@ -460,6 +525,8 @@ void initVM() {
     vm.stringClass = newClass(copyString("String", 6));
     definePrimitive(vm.stringClass, "length", lengthNative, 1);
     definePrimitive(vm.stringClass, "split", stringSplitNative, 2);
+    definePrimitive(vm.stringClass, "charAt", charAtNative, 2);
+    definePrimitive(vm.stringClass, "slice", sliceNative, 2);
 
     vm.numberClass = newClass(copyString("Number", 6));
     definePrimitive(vm.numberClass, "add", addNumberNative, 2);
@@ -552,8 +619,8 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_BOUND_NATIVE: {
                 ObjBoundNative* bound = AS_BOUND_NATIVE(callee);
                 argCount += 1; // because we pass in the "instance" as well
-                if (argCount != bound->native->arity) {
-                    runtimeError("Expected %d arguments but got %d", bound->native->arity, argCount);
+                if (argCount < bound->native->arity) {
+                    runtimeError("Expected at least %d arguments but got %d", bound->native->arity, argCount);
                     return false;
                 }
                 push(bound->receiver);
@@ -578,8 +645,8 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_CLOSURE: return call(AS_CLOSURE(callee), argCount);
             case OBJ_NATIVE: {
                 ObjNative* nativeObj = (ObjNative*)AS_OBJ(callee);
-                if (argCount != nativeObj->arity) {
-                    runtimeError("Expected %d arguments but got %d", nativeObj->arity, argCount);
+                if (argCount < nativeObj->arity) {
+                    runtimeError("Expected at least %d arguments but got %d", nativeObj->arity, argCount);
                     return false;
                 }
                 NativeFn native = AS_NATIVE(callee);
@@ -1095,7 +1162,7 @@ static InterpretResult run() {
 
                 // Return from run() when we've popped back to the initial frame count
                 if (vm.frameCount < initialFrameCount) {
-                    pop();  // Pop the closure
+                    vm.stackTop = frame->slots;  // Reset stack to where closure was
                     push(result);  // Push the return value for the caller
                     return INTERPRET_OK;
                 }
