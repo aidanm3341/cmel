@@ -32,6 +32,7 @@ import {
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { URI } from 'vscode-uri';
 import { Scanner, TokenType } from './scanner';
 import { Parser } from './parser';
 import { Analyzer, Symbol } from './analyzer';
@@ -49,6 +50,7 @@ const documentAnalysis = new Map<string, {
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
+let workspaceRoot: string | null = null;
 
 connection.onInitialize((params: InitializeParams) => {
   const capabilities = params.capabilities;
@@ -59,6 +61,15 @@ connection.onInitialize((params: InitializeParams) => {
   hasWorkspaceFolderCapability = !!(
     capabilities.workspace && !!capabilities.workspace.workspaceFolders
   );
+
+  // Capture workspace root
+  if (params.workspaceFolders && params.workspaceFolders.length > 0) {
+    workspaceRoot = URI.parse(params.workspaceFolders[0].uri).fsPath;
+  } else if (params.rootUri) {
+    workspaceRoot = URI.parse(params.rootUri).fsPath;
+  } else if (params.rootPath) {
+    workspaceRoot = params.rootPath;
+  }
 
   const result: InitializeResult = {
     capabilities: {
@@ -135,8 +146,8 @@ function analyzeDocument(document: TextDocument): void {
       });
     }
 
-    const analyzer = new Analyzer();
-    analyzer.analyze(ast);
+    const analyzer = new Analyzer(workspaceRoot || process.cwd());
+    analyzer.analyze(ast, document.uri);
 
     documentAnalysis.set(document.uri, { ast, analyzer, tokens });
 

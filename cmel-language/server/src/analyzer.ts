@@ -2,6 +2,7 @@
 
 import * as AST from './ast';
 import { Token, TokenType } from './scanner';
+import { ModuleResolver, ExportInfo } from './module-resolver';
 
 export interface Symbol {
   name: string;
@@ -65,10 +66,13 @@ export class Analyzer {
   private inLoop = 0;
   private inFunction = 0;
   private inClass = 0;
+  private moduleResolver: ModuleResolver;
+  private currentDocumentUri: string = '';
 
-  constructor() {
+  constructor(workspaceRoot: string) {
     this.globalScope = new Scope();
     this.currentScope = this.globalScope;
+    this.moduleResolver = new ModuleResolver(workspaceRoot);
     this.defineBuiltins();
   }
 
@@ -108,8 +112,9 @@ export class Analyzer {
     }
   }
 
-  analyze(program: AST.Program): void {
+  analyze(program: AST.Program, documentUri: string = ''): void {
     this.diagnostics = [];
+    this.currentDocumentUri = documentUri;
     this.visitProgram(program);
   }
 
@@ -386,24 +391,67 @@ export class Analyzer {
   }
 
   private visitImportStatement(stmt: AST.ImportStatement): void {
-    // For each imported name, create a symbol in the global scope
-    // This prevents "undefined" errors for imported symbols
-    for (const importedName of stmt.imports) {
-      const symbol: Symbol = {
-        name: importedName.lexeme,
-        kind: 'variable', // Could be function, class, or variable - we don't know
-        isConst: true,
-        isExport: false,
-        declarationNode: stmt,
-        declarationToken: importedName,
-        scope: this.globalScope,
-      };
-      this.globalScope.define(symbol);
-      this.symbols.set(importedName.lexeme, symbol);
+    const importPath = stmt.path.lexeme.slice(1, -1); // Remove quotes
+
+    // Resolve module
+    const moduleExports = this.moduleResolver.resolveImport(
+      importPath,
+      this.currentDocumentUri
+    );
+
+    if (!moduleExports) {
+      this.addDiagnostic(
+        `Cannot find module '${importPath}'`,
+        stmt,
+        'error'
+      );
+      this.diagnostics.push(...this.moduleResolver.getDiagnostics());
+      return;
     }
 
-    // If no specific imports (e.g., import "path" without "from"),
-    // we can't know what's being imported, so we can't prevent errors
+    // Wildcard import: import "path"
+    if (stmt.imports.length === 0) {
+      for (const [name, exportInfo] of moduleExports.exports) {
+        this.addImportedSymbol(name, exportInfo, stmt);
+      }
+    }
+    // Named import: import A, B from "path"
+    else {
+      for (const importToken of stmt.imports) {
+        const exportInfo = moduleExports.exports.get(importToken.lexeme);
+
+        if (!exportInfo) {
+          this.addDiagnostic(
+            `Module '${importPath}' does not export '${importToken.lexeme}'`,
+            stmt,
+            'error'
+          );
+          continue;
+        }
+
+        this.addImportedSymbol(importToken.lexeme, exportInfo, stmt);
+      }
+    }
+  }
+
+  private addImportedSymbol(
+    name: string,
+    exportInfo: ExportInfo,
+    importStmt: AST.ImportStatement
+  ): void {
+    const symbol: Symbol = {
+      name,
+      kind: exportInfo.kind,
+      isConst: exportInfo.kind === 'function' || exportInfo.isConst,
+      isExport: false,
+      declarationNode: exportInfo.node,
+      declarationToken: exportInfo.token,
+      scope: this.globalScope,
+      type: exportInfo.kind === 'function' ? 'function' : undefined
+    };
+
+    this.globalScope.define(symbol);
+    this.symbols.set(name, symbol);
   }
 
   private visitExpression(expr: AST.Expression): void {

@@ -130,9 +130,31 @@ export class Parser {
     const methods: AST.FunDeclaration[] = [];
     while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
       const methodName = this.consume(TokenType.IDENTIFIER, 'Expected method name');
-      this.current--; // back up to let funDeclaration parse the name
-      this.advance(); // skip past identifier as FUN token
-      methods.push(this.funDeclaration(false));
+
+      this.consume(TokenType.LEFT_PAREN, 'Expected ( after method name');
+      const params: Token[] = [];
+
+      if (!this.check(TokenType.RIGHT_PAREN)) {
+        do {
+          params.push(this.consume(TokenType.IDENTIFIER, 'Expected parameter name'));
+        } while (this.match(TokenType.COMMA));
+      }
+
+      this.consume(TokenType.RIGHT_PAREN, 'Expected ) after parameters');
+      this.consume(TokenType.LEFT_BRACE, 'Expected { before method body');
+
+      const body = this.blockStatement();
+
+      methods.push({
+        kind: 'FunDeclaration',
+        name: methodName,
+        params,
+        body,
+        isExport: false,
+        start: methodName.start,
+        end: body.end,
+        line: methodName.line
+      });
     }
 
     const endBrace = this.consume(TokenType.RIGHT_BRACE, 'Expected } after class body');
@@ -349,14 +371,16 @@ export class Parser {
   private importStatement(): AST.ImportStatement {
     const start = this.previous().start;
 
-    // Support both: import "path" and import name from "path"
+    // Support both: import "path" and import name1, name2, ... from "path"
     const imports: Token[] = [];
 
     if (this.check(TokenType.IDENTIFIER)) {
-      imports.push(this.advance());
-      if (this.match(TokenType.FROM)) {
-        // import name from "path"
-      }
+      // Parse comma-separated list of imports
+      do {
+        imports.push(this.consume(TokenType.IDENTIFIER, 'Expected import name'));
+      } while (this.match(TokenType.COMMA));
+
+      this.consume(TokenType.FROM, 'Expected "from" after import list');
     }
 
     const path = this.consume(TokenType.STRING, 'Expected import path');
