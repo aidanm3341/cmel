@@ -70,23 +70,51 @@ Modules are executed once and cached. All variables and functions defined in the
 - `stdlib/string.cmel` - String utilities (join, reverse, startsWith, endsWith)
 - `stdlib/list.cmel` - List algorithms (sum, filter, map, find, contains, reverse, sort)
 
+## Installation
+
+### Quick Install
+
+To build and install Cmel system-wide:
+
+```bash
+./install.sh
+```
+
+This will compile the interpreter and install it to `/usr/local/bin`, making it available from anywhere on your system.
+
+After installation, you can run:
+```bash
+cmel              # Start REPL
+cmel <file.cmel>  # Run a Cmel file
+```
+
+### Uninstall
+
+To remove Cmel from your system:
+
+```bash
+./uninstall.sh
+```
+
 ## Usage
 
-Compile the project using
+### Manual Build (without installing)
 
-```
+Compile the project using:
+
+```bash
 ./build.sh
 ```
 
-Then, you can either run `cmel` as a REPL
+Then, you can either run `cmel` as a REPL:
 
-```
+```bash
 ./cmel
 ```
 
-or execute a file by passing it the path
+or execute a file by passing it the path:
 
-```
+```bash
 ./cmel <filepath>
 ```
 
