@@ -78,7 +78,14 @@ export class Analyzer {
 
   private defineBuiltins(): void {
     // Built-in functions
-    const builtins = ['clock', 'input', 'readFile', 'number'];
+    const builtins = [
+      'clock', 'input', 'readFile', 'number',
+      // Test framework control functions
+      '__enterTestMode', '__exitTestMode', '__setCurrentTest',
+      '__testFailed', '__getLastFailure', '__clearLastFailure',
+      // Assertion functions
+      'assert', 'assertEqual'
+    ];
     for (const name of builtins) {
       const symbol: Symbol = {
         name,

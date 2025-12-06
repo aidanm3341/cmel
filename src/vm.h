@@ -43,6 +43,11 @@ typedef struct {
     Value* tempRoots;
     int tempRootCount;
     int tempRootCapacity;
+
+    // Test mode support
+    bool testMode;              // Whether in test mode
+    ObjList* testFailures;      // List of failure messages
+    ObjString* currentTestName; // Current test being run
 } VM;
 
 typedef enum {

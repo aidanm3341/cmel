@@ -394,6 +394,10 @@ static char* processEscapes(const char* str, int length, int* outLength) {
                     buffer[writeIndex++] = '\\';
                     i++;
                     break;
+                case 'e':
+                    buffer[writeIndex++] = '\x1b';  // ESC character for ANSI codes
+                    i++;
+                    break;
                 default:
                     error("Invalid escape sequence.");
                     free(buffer);

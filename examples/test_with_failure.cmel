@@ -1,0 +1,25 @@
+import "stdlib/test";
+
+describe("Passing tests", fun() {
+    it("should pass", fun() {
+        assertEqual(1, 1);
+    });
+});
+
+describe("Failing tests", fun() {
+    it("should fail with wrong value", fun() {
+        assertEqual(5, 3);
+    });
+
+    it("should fail with wrong type", fun() {
+        assertEqual("hello", 42);
+    });
+});
+
+describe("More passing tests", fun() {
+    it("should still run after failures", fun() {
+        assertEqual(2 + 2, 4);
+    });
+});
+
+run();

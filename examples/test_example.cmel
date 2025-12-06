@@ -1,0 +1,82 @@
+import "stdlib/test";
+
+describe("Basic assertions", fun() {
+    it("should pass when condition is true", fun() {
+        assert(true, "This should pass");
+    });
+
+    it("should compare equal values", fun() {
+        assertEqual(5, 5);
+        assertEqual("hello", "hello");
+        assertEqual(true, true);
+    });
+
+    it("should handle nil values", fun() {
+        var x = nil;
+        assertEqual(nil, x);
+    });
+});
+
+describe("Math operations", fun() {
+    it("should add numbers correctly", fun() {
+        var result = 2 + 2;
+        assertEqual(4, result);
+    });
+
+    it("should multiply numbers", fun() {
+        var result = 3 * 7;
+        assertEqual(21, result);
+    });
+
+    it("should handle division", fun() {
+        var result = 10 / 2;
+        assertEqual(5, result);
+    });
+});
+
+describe("String operations", fun() {
+    it("should concatenate strings", fun() {
+        var result = "Hello" + " " + "World";
+        assertEqual("Hello World", result);
+    });
+
+    it("should get string length", fun() {
+        var str = "test";
+        assertEqual(4, str.length());
+    });
+
+    it("should split strings", fun() {
+        var str = "a,b,c";
+        var parts = str.split(",");
+        assertEqual(3, parts.length());
+        assertEqual("a", parts[0]);
+        assertEqual("b", parts[1]);
+        assertEqual("c", parts[2]);
+    });
+});
+
+describe("List operations", fun() {
+    it("should create empty lists", fun() {
+        var list = [];
+        assertEqual(0, list.length());
+    });
+
+    it("should add items to lists", fun() {
+        var list = [];
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        assertEqual(3, list.length());
+        assertEqual(1, list[0]);
+        assertEqual(2, list[1]);
+        assertEqual(3, list[2]);
+    });
+
+    it("should check if list contains items", fun() {
+        var list = [1, 2, 3, 4, 5];
+        assert(list.contains(3), "List should contain 3");
+        assert(list.contains(1), "List should contain 1");
+    });
+});
+
+run();

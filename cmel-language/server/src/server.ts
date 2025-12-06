@@ -464,6 +464,40 @@ function getBuiltinSignature(name: string): SignatureHelp | null {
     'number': {
       label: 'number(value)',
       parameters: [{ label: 'value' }]
+    },
+    // Test framework control functions
+    '__enterTestMode': {
+      label: '__enterTestMode()',
+      parameters: []
+    },
+    '__exitTestMode': {
+      label: '__exitTestMode()',
+      parameters: []
+    },
+    '__setCurrentTest': {
+      label: '__setCurrentTest(name)',
+      parameters: [{ label: 'name' }]
+    },
+    '__testFailed': {
+      label: '__testFailed()',
+      parameters: []
+    },
+    '__getLastFailure': {
+      label: '__getLastFailure()',
+      parameters: []
+    },
+    '__clearLastFailure': {
+      label: '__clearLastFailure()',
+      parameters: []
+    },
+    // Assertion functions
+    'assert': {
+      label: 'assert(condition, message?)',
+      parameters: [{ label: 'condition' }, { label: 'message' }]
+    },
+    'assertEqual': {
+      label: 'assertEqual(expected, actual)',
+      parameters: [{ label: 'expected' }, { label: 'actual' }]
     }
   };
 

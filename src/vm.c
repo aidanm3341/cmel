@@ -32,6 +32,37 @@ static void resetStack() {
 }
 
 static void runtimeError(const char* format, ...) {
+    // In test mode, capture error instead of printing and terminating
+    if (vm.testMode) {
+        va_list args;
+        va_start(args, format);
+        char buffer[1024];
+        vsnprintf(buffer, sizeof(buffer), format, args);
+        va_end(args);
+
+        // Store error message in testFailures list
+        if (vm.testFailures != NULL) {
+            pushTempRoot(OBJ_VAL(vm.testFailures));
+            ObjString* errorMsg = copyString(buffer, strlen(buffer));
+            pushTempRoot(OBJ_VAL(errorMsg));
+
+            // Add to list - need to handle capacity
+            if (vm.testFailures->capacity < vm.testFailures->count + 1) {
+                int oldCapacity = vm.testFailures->capacity;
+                vm.testFailures->capacity = oldCapacity < 8 ? 8 : oldCapacity * 2;
+                vm.testFailures->items = (Value*)realloc(vm.testFailures->items,
+                    sizeof(Value) * vm.testFailures->capacity);
+            }
+            vm.testFailures->items[vm.testFailures->count] = OBJ_VAL(errorMsg);
+            vm.testFailures->count++;
+
+            popTempRoot();
+            popTempRoot();
+        }
+        return; // Don't reset stack, continue execution
+    }
+
+    // Original behavior for non-test mode
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
@@ -478,6 +509,94 @@ static Value numberNative(int argCount, Value* args) {
     }
 }
 
+// Test mode control native functions
+static Value enterTestModeNative(int argCount, Value* args) {
+    vm.testMode = true;
+    vm.testFailures = newList();
+    pushTempRoot(OBJ_VAL(vm.testFailures));
+    popTempRoot();
+    vm.currentTestName = NULL;
+    return NIL_VAL;
+}
+
+static Value exitTestModeNative(int argCount, Value* args) {
+    vm.testMode = false;
+    vm.testFailures = NULL;
+    vm.currentTestName = NULL;
+    return NIL_VAL;
+}
+
+static Value setCurrentTestNative(int argCount, Value* args) {
+    if (!IS_STRING(*args)) {
+        runtimeError("Test name must be a string.");
+        return NIL_VAL;
+    }
+    vm.currentTestName = AS_STRING(*args);
+    return NIL_VAL;
+}
+
+static Value testFailedNative(int argCount, Value* args) {
+    if (vm.testFailures == NULL) return BOOL_VAL(false);
+    return BOOL_VAL(vm.testFailures->count > 0);
+}
+
+static Value getLastFailureNative(int argCount, Value* args) {
+    if (vm.testFailures == NULL || vm.testFailures->count == 0) {
+        return NIL_VAL;
+    }
+    Value failure = vm.testFailures->items[vm.testFailures->count - 1];
+    return failure;
+}
+
+static Value clearLastFailureNative(int argCount, Value* args) {
+    if (vm.testFailures != NULL && vm.testFailures->count > 0) {
+        vm.testFailures->count--;
+    }
+    return NIL_VAL;
+}
+
+// Basic assertion native functions
+static Value assertNative(int argCount, Value* args) {
+    Value condition = *args;
+    const char* message = "Assertion failed";
+
+    if (argCount > 1 && IS_STRING(args[1])) {
+        message = AS_STRING(args[1])->chars;
+    }
+
+    if (isFalsey(condition)) {
+        runtimeError("%s", message);
+        return BOOL_VAL(false);
+    }
+    return BOOL_VAL(true);
+}
+
+static Value assertEqualNative(int argCount, Value* args) {
+    Value expected = args[0];
+    Value actual = args[1];
+
+    if (!valuesEqual(expected, actual)) {
+        ObjString* expectedStr = valueToString(expected);
+        ObjString* actualStr = valueToString(actual);
+
+        pushTempRoot(OBJ_VAL(expectedStr));
+        pushTempRoot(OBJ_VAL(actualStr));
+
+        char buffer[512];
+        snprintf(buffer, sizeof(buffer),
+            "Expected values to be equal.\n  Expected: %s\n  Actual: %s",
+            expectedStr->chars,
+            actualStr->chars);
+
+        popTempRoot();
+        popTempRoot();
+
+        runtimeError("%s", buffer);
+        return BOOL_VAL(false);
+    }
+    return BOOL_VAL(true);
+}
+
 static void defineNative(const char* name, NativeFn function, int arity) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function, arity)));
@@ -508,6 +627,11 @@ void initVM() {
     vm.tempRootCapacity = 0;
     vm.tempRoots = NULL;
 
+    // Initialize test mode fields
+    vm.testMode = false;
+    vm.testFailures = NULL;
+    vm.currentTestName = NULL;
+
     initTable(&vm.globals);
     initTable(&vm.strings);
     initTable(&vm.modules);
@@ -521,6 +645,18 @@ void initVM() {
     defineNative("input", inputNative, 0);
     defineNative("readFile", readFileNative, 1);
     defineNative("number", numberNative, 1);
+
+    // Test mode control functions
+    defineNative("__enterTestMode", enterTestModeNative, 0);
+    defineNative("__exitTestMode", exitTestModeNative, 0);
+    defineNative("__setCurrentTest", setCurrentTestNative, 1);
+    defineNative("__testFailed", testFailedNative, 0);
+    defineNative("__getLastFailure", getLastFailureNative, 0);
+    defineNative("__clearLastFailure", clearLastFailureNative, 0);
+
+    // Assertion functions
+    defineNative("assert", assertNative, -1);
+    defineNative("assertEqual", assertEqualNative, 2);
 
     vm.stringClass = newClass(copyString("String", 6));
     definePrimitive(vm.stringClass, "length", lengthNative, 1);

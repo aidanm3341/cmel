@@ -1,0 +1,21 @@
+import "stdlib/test";
+
+describe("Assert function", fun() {
+    it("should pass with true condition", fun() {
+        assert(5 > 3, "Five should be greater than three");
+    });
+
+    it("should fail with false condition and custom message", fun() {
+        assert(false, "This is a custom failure message");
+    });
+
+    it("should fail with default message", fun() {
+        assert(1 > 10);
+    });
+
+    it("should continue after assertion failure", fun() {
+        assert(true, "This test runs after failures");
+    });
+});
+
+run();
