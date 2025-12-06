@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "object.h"
 #include "memory.h"
@@ -32,10 +33,43 @@ void printValue(Value value) {
         case VAL_BOOL: printf(AS_BOOL(value) ? "true" : "false"); break;
         case VAL_NIL: printf("nil"); break;
         case VAL_NUMBER: {
-            if (AS_NUMBER(value) < 1000000) {
-                printf("%g", AS_NUMBER(value));
+            double num = AS_NUMBER(value);
+            // Check if the number is a whole number (no fractional part)
+            if (num == (long long)num) {
+                // Print as integer (no decimal point)
+                printf("%.0f", num);
             } else {
-                printf("%f", AS_NUMBER(value));
+                // Print with fixed-point notation, avoiding scientific notation
+                // Use a high enough precision to match %g behavior but with %f
+                char buffer[64];
+                // Determine appropriate decimal places based on magnitude
+                // For numbers < 1, use more decimal places
+                int decimal_places;
+                if (fabs(num) < 0.001) {
+                    decimal_places = 9;  // Very small numbers need more precision
+                } else if (fabs(num) < 1) {
+                    decimal_places = 6;  // Small decimals
+                } else {
+                    // For numbers >= 1, calculate to maintain ~6 significant figures
+                    // This mimics %g behavior
+                    int magnitude = (int)log10(fabs(num));
+                    decimal_places = 5 - magnitude;
+                    // But ensure we show at least 1 decimal place for non-whole numbers
+                    if (decimal_places < 1) decimal_places = 1;
+                    if (decimal_places > 10) decimal_places = 10;
+                }
+                snprintf(buffer, sizeof(buffer), "%.*f", decimal_places, num);
+                // Remove trailing zeros
+                char* end = buffer + strlen(buffer) - 1;
+                while (end > buffer && *end == '0') {
+                    *end = '\0';
+                    end--;
+                }
+                // Remove trailing decimal point if all decimals were zeros
+                if (end > buffer && *end == '.') {
+                    *end = '\0';
+                }
+                printf("%s", buffer);
             }
             break;
         }
@@ -64,12 +98,43 @@ ObjString* valueToString(Value value) {
             return copyString("nil", 3);
         }
         case VAL_NUMBER: {
-            char buffer[24];
+            char buffer[64];
+            double num = AS_NUMBER(value);
             int length;
-            if (AS_NUMBER(value) < 1000000) {
-                length = snprintf(buffer, sizeof(buffer), "%g", AS_NUMBER(value));
+
+            // Check if the number is a whole number (no fractional part)
+            if (num == (long long)num) {
+                // Print as integer (no decimal point)
+                length = snprintf(buffer, sizeof(buffer), "%.0f", num);
             } else {
-                length = snprintf(buffer, sizeof(buffer), "%f", AS_NUMBER(value));
+                // Print with fixed-point notation, avoiding scientific notation
+                char temp[64];
+                int decimal_places;
+                if (fabs(num) < 0.001) {
+                    decimal_places = 9;  // Very small numbers need more precision
+                } else if (fabs(num) < 1) {
+                    decimal_places = 6;  // Small decimals
+                } else {
+                    // For numbers >= 1, calculate to maintain ~6 significant figures
+                    int magnitude = (int)log10(fabs(num));
+                    decimal_places = 5 - magnitude;
+                    // Ensure we show at least 1 decimal place for non-whole numbers
+                    if (decimal_places < 1) decimal_places = 1;
+                    if (decimal_places > 10) decimal_places = 10;
+                }
+                snprintf(temp, sizeof(temp), "%.*f", decimal_places, num);
+                // Remove trailing zeros
+                char* end = temp + strlen(temp) - 1;
+                while (end > temp && *end == '0') {
+                    *end = '\0';
+                    end--;
+                }
+                // Remove trailing decimal point if all decimals were zeros
+                if (end > temp && *end == '.') {
+                    *end = '\0';
+                }
+                length = strlen(temp);
+                strcpy(buffer, temp);
             }
             return copyString(buffer, length);
         }

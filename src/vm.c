@@ -470,7 +470,7 @@ static Value numberNative(int argCount, Value* args) {
         return AS_BOOL(val) ? NUMBER_VAL(1) : NUMBER_VAL(0);
     } else if (IS_STRING(val)) {
         ObjString* str = AS_STRING(val);
-        float num = strtof(str->chars, NULL);
+        double num = strtod(str->chars, NULL);
         return NUMBER_VAL(num);
     } else {
         runtimeError("Given type cannot be converted to a number.");
