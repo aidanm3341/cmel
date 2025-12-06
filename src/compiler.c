@@ -853,7 +853,7 @@ static void method() {
     emitBytes(OP_METHOD, constant);
 }
 
-static void classDeclaration() {
+static uint8_t classDeclaration() {
     consume(TOKEN_IDENTIFIER, "Expect class name.");
     Token className = parser.previous;
     uint8_t nameConstant = identiferConstant(&parser.previous);
@@ -897,6 +897,7 @@ static void classDeclaration() {
     }
 
     currentClass = currentClass->enclosing;
+    return nameConstant;
 }
 
 static void funDeclaration() {
@@ -1220,9 +1221,9 @@ static void declaration() {
     }
 
     if (match(TOKEN_CLASS)) {
-        classDeclaration();
+        uint8_t global = classDeclaration();
         if (isExport) {
-            error("Cannot export classes yet.");
+            emitBytes(OP_EXPORT, global);
         }
     } else if (match(TOKEN_FUN)) {
         uint8_t global = parseVariable("Expect function name.", false);

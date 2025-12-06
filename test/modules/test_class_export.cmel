@@ -1,0 +1,19 @@
+export class Person {
+    init(name) {
+        this.name = name;
+    }
+
+    greet() {
+        print "Hello, I'm " + this.name;
+    }
+}
+
+export class Animal {
+    init(species) {
+        this.species = species;
+    }
+
+    speak() {
+        print "I am a " + this.species;
+    }
+}

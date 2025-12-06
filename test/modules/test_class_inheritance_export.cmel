@@ -1,0 +1,11 @@
+export class Base {
+    baseMethod() {
+        print "Base method";
+    }
+}
+
+export class Derived < Base {
+    derivedMethod() {
+        print "Derived method";
+    }
+}

@@ -1,0 +1,9 @@
+import Person, Animal from "test/modules/test_class_export";
+
+var person = Person("Alice");
+person.greet();
+// expect: Hello, I'm Alice
+
+var animal = Animal("cat");
+animal.speak();
+// expect: I am a cat

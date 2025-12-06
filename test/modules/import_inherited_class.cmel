@@ -1,0 +1,7 @@
+import Derived from "test/modules/test_class_inheritance_export";
+
+var obj = Derived();
+obj.baseMethod();
+// expect: Base method
+obj.derivedMethod();
+// expect: Derived method
