@@ -50,6 +50,7 @@ export interface ClassDeclaration extends ASTNode {
   name: Token;
   superclass: Token | null;
   methods: FunDeclaration[];
+  isExport: boolean;
 }
 
 export interface ExpressionStatement extends ASTNode {

@@ -146,7 +146,29 @@ function analyzeDocument(document: TextDocument): void {
       });
     }
 
-    const analyzer = new Analyzer(workspaceRoot || process.cwd());
+    // Determine workspace root, falling back to document directory
+    let effectiveWorkspaceRoot = workspaceRoot;
+    if (!effectiveWorkspaceRoot) {
+      const documentPath = URI.parse(document.uri).fsPath;
+      const path = require('path');
+      const fs = require('fs');
+      effectiveWorkspaceRoot = path.dirname(documentPath);
+
+      // Try to find project root by looking for typical project markers
+      let currentDir = effectiveWorkspaceRoot;
+      while (currentDir !== path.dirname(currentDir)) {
+        // Check for common project root markers
+        if (fs.existsSync(path.join(currentDir, 'package.json')) ||
+            fs.existsSync(path.join(currentDir, '.git')) ||
+            fs.existsSync(path.join(currentDir, 'stdlib'))) {
+          effectiveWorkspaceRoot = currentDir;
+          break;
+        }
+        currentDir = path.dirname(currentDir);
+      }
+    }
+
+    const analyzer = new Analyzer(effectiveWorkspaceRoot);
     analyzer.analyze(ast, document.uri);
 
     documentAnalysis.set(document.uri, { ast, analyzer, tokens });

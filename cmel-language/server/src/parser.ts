@@ -51,7 +51,7 @@ export class Parser {
         return this.funDeclaration(isExport);
       }
       if (this.match(TokenType.CLASS)) {
-        return this.classDeclaration();
+        return this.classDeclaration(isExport);
       }
 
       return this.statement();
@@ -117,7 +117,7 @@ export class Parser {
     };
   }
 
-  private classDeclaration(): AST.ClassDeclaration {
+  private classDeclaration(isExport: boolean): AST.ClassDeclaration {
     const name = this.consume(TokenType.IDENTIFIER, 'Expected class name');
 
     let superclass: Token | null = null;
@@ -164,6 +164,7 @@ export class Parser {
       name,
       superclass,
       methods,
+      isExport,
       start: name.start,
       end: endBrace.end,
       line: name.line

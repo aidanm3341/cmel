@@ -289,7 +289,7 @@ export class Analyzer {
       name: stmt.name.lexeme,
       kind: 'class',
       isConst: true,
-      isExport: false,
+      isExport: stmt.isExport,
       declarationNode: stmt,
       declarationToken: stmt.name,
       scope: this.currentScope,
@@ -442,7 +442,7 @@ export class Analyzer {
     const symbol: Symbol = {
       name,
       kind: exportInfo.kind,
-      isConst: exportInfo.kind === 'function' || exportInfo.isConst,
+      isConst: exportInfo.kind === 'function' || exportInfo.kind === 'class' || exportInfo.isConst,
       isExport: false,
       declarationNode: exportInfo.node,
       declarationToken: exportInfo.token,

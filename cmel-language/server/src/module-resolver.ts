@@ -10,10 +10,10 @@ import { Diagnostic } from './analyzer';
 
 export interface ExportInfo {
   name: string;
-  kind: 'variable' | 'function';
+  kind: 'variable' | 'function' | 'class';
   isConst: boolean;
   token: Token;
-  node: AST.VarDeclaration | AST.FunDeclaration;
+  node: AST.VarDeclaration | AST.FunDeclaration | AST.ClassDeclaration;
 }
 
 export interface ModuleExports {
@@ -175,6 +175,14 @@ export class ModuleResolver {
         exports.set(statement.name.lexeme, {
           name: statement.name.lexeme,
           kind: 'function',
+          isConst: true,
+          token: statement.name,
+          node: statement
+        });
+      } else if (statement.kind === 'ClassDeclaration' && statement.isExport) {
+        exports.set(statement.name.lexeme, {
+          name: statement.name.lexeme,
+          kind: 'class',
           isConst: true,
           token: statement.name,
           node: statement
