@@ -1,23 +1,23 @@
 // ANSI color codes (using \e for ESC character)
-var __RESET = "\e[0m";
-var __BOLD = "\e[1m";
-var __GREEN = "\e[32m";
-var __RED = "\e[31m";
-var __CYAN = "\e[36m";
-var __GRAY = "\e[90m";
+var RESET = "\e[0m";
+var BOLD = "\e[1m";
+var GREEN = "\e[32m";
+var RED = "\e[31m";
+var CYAN = "\e[36m";
+var GRAY = "\e[90m";
 
-var __testSuites = [];
-var __currentSuite = nil;
+var testSuites = [];
+var currentSuite = nil;
 
 // Enable test mode when module loads
 __enterTestMode();
 
-export fun describe(name, fn) {
-    print __BOLD + __CYAN + name + __RESET;
+export fun suite(name, fn) {
+    print BOLD + CYAN + name + RESET;
     fn();
 }
 
-export fun it(description, testFn) {
+export fun test(description, testFn) {
     __setCurrentTest(description);
     __clearLastFailure();
 
@@ -25,10 +25,10 @@ export fun it(description, testFn) {
 
     if (__testFailed()) {
         var failure = __getLastFailure();
-        print __RED + "  ✗ " + __RESET + __GRAY + description + __RESET;
-        print __RED + "    " + failure + __RESET;
+        print RED + "  ✗ " + RESET + GRAY + description + RESET;
+        print RED + "    " + failure + RESET;
     } else {
-        print __GREEN + "  ✓ " + __RESET + description;
+        print GREEN + "  ✓ " + RESET + description;
     }
 }
 

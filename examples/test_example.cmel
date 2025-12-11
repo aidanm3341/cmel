@@ -1,51 +1,51 @@
-import "stdlib/test";
+import suite, test, run from "stdlib/test";
 
-describe("Basic assertions", fun() {
-    it("should pass when condition is true", fun() {
+suite("Basic assertions", fun() {
+    test("should pass when condition is true", fun() {
         assert(true, "This should pass");
     });
 
-    it("should compare equal values", fun() {
+    test("should compare equal values", fun() {
         assertEqual(5, 5);
         assertEqual("hello", "hello");
         assertEqual(true, true);
     });
 
-    it("should handle nil values", fun() {
+    test("should handle nil values", fun() {
         var x = nil;
         assertEqual(nil, x);
     });
 });
 
-describe("Math operations", fun() {
-    it("should add numbers correctly", fun() {
+suite("Math operations", fun() {
+    test("should add numbers correctly", fun() {
         var result = 2 + 2;
         assertEqual(4, result);
     });
 
-    it("should multiply numbers", fun() {
+    test("should multiply numbers", fun() {
         var result = 3 * 7;
         assertEqual(21, result);
     });
 
-    it("should handle division", fun() {
+    test("should handle division", fun() {
         var result = 10 / 2;
         assertEqual(5, result);
     });
 });
 
-describe("String operations", fun() {
-    it("should concatenate strings", fun() {
+suite("String operations", fun() {
+    test("should concatenate strings", fun() {
         var result = "Hello" + " " + "World";
         assertEqual("Hello World", result);
     });
 
-    it("should get string length", fun() {
+    test("should get string length", fun() {
         var str = "test";
         assertEqual(4, str.length());
     });
 
-    it("should split strings", fun() {
+    test("should split strings", fun() {
         var str = "a,b,c";
         var parts = str.split(",");
         assertEqual(3, parts.length());
@@ -55,13 +55,13 @@ describe("String operations", fun() {
     });
 });
 
-describe("List operations", fun() {
-    it("should create empty lists", fun() {
+suite("List operations", fun() {
+    test("should create empty lists", fun() {
         var list = [];
         assertEqual(0, list.length());
     });
 
-    it("should add items to lists", fun() {
+    test("should add items to lists", fun() {
         var list = [];
         list.add(1);
         list.add(2);
@@ -72,7 +72,7 @@ describe("List operations", fun() {
         assertEqual(3, list[2]);
     });
 
-    it("should check if list contains items", fun() {
+    test("should check if list contains items", fun() {
         var list = [1, 2, 3, 4, 5];
         assert(list.contains(3), "List should contain 3");
         assert(list.contains(1), "List should contain 1");

@@ -50,6 +50,50 @@ fun merge(nums, left, mid, right) {
     return nums;
 }
 
+fun mergeWithComparator(nums, left, mid, right, comparator) {
+    var n1 = mid - left + 1;
+    var n2 = right - mid;
+
+    var leftTmp = createListWithDefaults(0, n1);
+    var rightTmp = createListWithDefaults(0, n2);
+
+    for (var i = 0; i < n1; i = i+1) {
+        leftTmp[i] = nums[left + i];
+    }
+    for (var i = 0; i < n2; i = i+1) {
+        rightTmp[i] = nums[mid + 1 + i];
+    }
+
+    var i = 0;
+    var j = 0;
+    var k = left;
+
+    while (i < n1 and j < n2) {
+        if (comparator(leftTmp[i], rightTmp[j]) <= 0) {
+            nums[k] = leftTmp[i];
+            i = i + 1;
+        } else {
+            nums[k] = rightTmp[j];
+            j = j + 1;
+        }
+        k = k + 1;
+    }
+
+    while (i < n1) {
+        nums[k] = leftTmp[i];
+        i = i + 1;
+        k = k + 1;
+    }
+
+    while (j < n2) {
+        nums[k] = rightTmp[j];
+        j = j + 1;
+        k = k + 1;
+    }
+
+    return nums;
+}
+
 fun mergeSort(nums, left, right) {
     if (left < right) {
         var mid = left + (right - left) / 2;
@@ -66,6 +110,34 @@ fun mergeSort(nums, left, right) {
     return nums;
 }
 
+fun mergeSortWithComparator(nums, left, right, comparator) {
+    if (left < right) {
+        var mid = left + (right - left) / 2;
+        // floor the number. Needs better approach
+        mid = "" + mid;
+        mid = mid.split(".");
+        mid = number(mid[0]);
+
+        mergeSortWithComparator(nums, left, mid, comparator);
+        mergeSortWithComparator(nums, mid + 1, right, comparator);
+
+        return mergeWithComparator(nums, left, mid, right, comparator);
+    }
+    return nums;
+}
+
 export fun sort(nums) {
     return mergeSort(nums, 0, nums.length() - 1);
+}
+
+export fun sortWith(nums, comparator) {
+    return mergeSortWithComparator(nums, 0, nums.length() - 1, comparator);
+}
+
+export fun slice(list, start, end) {
+    var newList = [];
+    for (var i=start; i<end; i=i+1) {
+        newList.add(list[i]);
+    }
+    return newList;
 }

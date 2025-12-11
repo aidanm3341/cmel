@@ -1,0 +1,52 @@
+// Test sortWith with custom comparator
+
+import "stdlib/list";
+
+// Test sorting numbers in ascending order
+var nums = [5, 2, 8, 1, 9, 3];
+sortWith(nums, fun(a, b) { return a - b; });
+print nums;
+// expect: [1, 2, 3, 5, 8, 9]
+
+// Test sorting numbers in descending order
+var nums2 = [5, 2, 8, 1, 9, 3];
+sortWith(nums2, fun(a, b) { return b - a; });
+print nums2;
+// expect: [9, 8, 5, 3, 2, 1]
+
+// Test sorting custom objects by property
+class Person {
+    init(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+var people = [
+    Person("Alice", 30),
+    Person("Bob", 25),
+    Person("Charlie", 35),
+    Person("David", 20)
+];
+
+// Sort by age ascending
+sortWith(people, fun(a, b) { return a.age - b.age; });
+print people[0].name;
+// expect: David
+print people[1].name;
+// expect: Bob
+print people[2].name;
+// expect: Alice
+print people[3].name;
+// expect: Charlie
+
+// Sort by age descending
+sortWith(people, fun(a, b) { return b.age - a.age; });
+print people[0].name;
+// expect: Charlie
+print people[1].name;
+// expect: Alice
+print people[2].name;
+// expect: Bob
+print people[3].name;
+// expect: David

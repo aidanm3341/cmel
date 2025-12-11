@@ -11,6 +11,7 @@
 #include "object.h"
 #include "memory.h"
 #include "vm.h"
+#include "stdlib_embedded.h"
 
 VM vm;
 
@@ -1546,54 +1547,107 @@ static InterpretResult run() {
 #undef READ_BYTE
 }
 
-static ObjModule* loadModule(const char* path) {
+// Normalize module paths:
+// - "stdlib:math" -> "stdlib/math"
+// - "stdlib/math" -> "stdlib/math" (unchanged)
+static void normalizeModulePath(const char* path, char* normalized, size_t maxLen) {
+    const char* src = path;
+    char* dst = normalized;
+    size_t remaining = maxLen - 1;
 
-    // Check if module is already loaded
-    ObjString* pathString = copyString(path, (int)strlen(path));
+    // Replace "stdlib:" with "stdlib/"
+    if (strncmp(src, "stdlib:", 7) == 0) {
+        strncpy(dst, "stdlib/", remaining);
+        dst += 7;
+        src += 7;
+        remaining -= 7;
+    }
+
+    // Copy the rest
+    strncpy(dst, src, remaining);
+    normalized[maxLen - 1] = '\0';
+}
+
+// Find an embedded module by normalized path
+static const EmbeddedModule* findEmbeddedModule(const char* normalizedPath) {
+    for (int i = 0; i < EMBEDDED_STDLIB_COUNT; i++) {
+        if (strcmp(EMBEDDED_STDLIB[i].name, normalizedPath) == 0) {
+            return &EMBEDDED_STDLIB[i];
+        }
+    }
+    return NULL;
+}
+
+static ObjModule* loadModule(const char* path) {
+    // Normalize path (handle stdlib: prefix)
+    char normalizedPath[256];
+    normalizeModulePath(path, normalizedPath, sizeof(normalizedPath));
+
+    // Check if module is already loaded (use normalized path for caching)
+    ObjString* pathString = copyString(normalizedPath, (int)strlen(normalizedPath));
     Value cachedModule;
     if (tableGet(&vm.modules, pathString, &cachedModule)) {
         return AS_MODULE(cachedModule);
     }
 
+    char* source = NULL;
+    bool isEmbedded = false;
 
-    // Build full path with .cmel extension
+    // STEP 1: Try loading from filesystem (current directory)
     char fullPath[256];
-    snprintf(fullPath, sizeof(fullPath), "%s.cmel", path);
-
-    // Read module file
+    snprintf(fullPath, sizeof(fullPath), "%s.cmel", normalizedPath);
     FILE* file = fopen(fullPath, "rb");
-    if (file == NULL) {
-        fprintf(stderr, "Could not open module file \"%s\".\n", fullPath);
-        return NULL;
-    }
 
-    fseek(file, 0L, SEEK_END);
-    size_t fileSize = ftell(file);
-    rewind(file);
+    if (file != NULL) {
+        // Load from filesystem
+        fseek(file, 0L, SEEK_END);
+        size_t fileSize = ftell(file);
+        rewind(file);
 
-    char* source = (char*)malloc(fileSize + 1);
-    if (source == NULL) {
+        source = (char*)malloc(fileSize + 1);
+        if (source == NULL) {
+            fclose(file);
+            fprintf(stderr, "Not enough memory to read module \"%s\".\n", fullPath);
+            return NULL;
+        }
+
+        size_t bytesRead = fread(source, sizeof(char), fileSize, file);
+        if (bytesRead < fileSize) {
+            free(source);
+            fclose(file);
+            fprintf(stderr, "Could not read module \"%s\".\n", fullPath);
+            return NULL;
+        }
+        source[bytesRead] = '\0';
         fclose(file);
-        fprintf(stderr, "Not enough memory to read module \"%s\".\n", fullPath);
-        return NULL;
+        isEmbedded = false;
+
+    } else {
+        // STEP 2: Try loading from embedded stdlib
+        const EmbeddedModule* embedded = findEmbeddedModule(normalizedPath);
+
+        if (embedded != NULL) {
+            // Use embedded source (don't allocate, just point to const data)
+            source = (char*)embedded->source;
+            isEmbedded = true;
+
+        } else {
+            // STEP 3: Future - check CMEL_PATH environment variable
+            fprintf(stderr, "Could not open module file \"%s\".\n", fullPath);
+            return NULL;
+        }
     }
 
-    size_t bytesRead = fread(source, sizeof(char), fileSize, file);
-    if (bytesRead < fileSize) {
-        free(source);
-        fclose(file);
-        fprintf(stderr, "Could not read module \"%s\".\n", fullPath);
-        return NULL;
-    }
-    source[bytesRead] = '\0';
-    fclose(file);
-
-    // Compile the module
+    // Compile the module (same for both embedded and filesystem)
     ObjFunction* moduleFunction = compile(source);
-    free(source);
+
+    // Free source ONLY if it was allocated (filesystem load)
+    if (!isEmbedded) {
+        free(source);
+    }
 
     if (moduleFunction == NULL) {
-        fprintf(stderr, "Failed to compile module \"%s\".\n", fullPath);
+        fprintf(stderr, "Failed to compile module \"%s\".\n", normalizedPath);
         return NULL;
     }
 
