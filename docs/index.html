@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMEL Language Documentation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>CMEL</h1>
+                <p class="version">v0.1.0</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#introduction">Introduction</a></li>
+                    <li><a href="#native-functions">Native Functions</a></li>
+                    <li class="section-header">Standard Library</li>
+                    <li><a href="#stdlib-math">Math</a></li>
+                    <li><a href="#stdlib-string">String</a></li>
+                    <li><a href="#stdlib-list">List</a></li>
+                    <li><a href="#stdlib-test">Test</a></li>
+                    <li class="section-header">Built-in Methods</li>
+                    <li><a href="#string-methods">String Methods</a></li>
+                    <li><a href="#list-methods">List Methods</a></li>
+                    <li><a href="#map-methods">Map Methods</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section id="introduction">
+                <h1>CMEL Language Documentation</h1>
+                <p>CMEL (see-mel) is a bytecode virtual machine implementation of the Lox language from "Crafting Interpreters" by Robert Nystrom, written in C.</p>
+                <p>This documentation covers all native functions and standard library functions available in CMEL.</p>
+            </section>
+
+            <section id="native-functions">
+                <h2>Native Functions</h2>
+                <p>These functions are built into the CMEL runtime and are available globally without importing.</p>
+
+                <div class="function-card">
+                    <h3 class="function-name">clock()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>clock()</code>
+                    </div>
+                    <p class="function-description">Returns the number of seconds since the program started.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var start = clock();
+// ... do some work ...
+var elapsed = clock() - start;
+print "Took " + elapsed + " seconds";</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">input()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>input()</code>
+                    </div>
+                    <p class="function-description">Reads a line of input from stdin (up to 256 characters).</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print "What's your name?";
+var name = input();
+print "Hello, " + name + "!";</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">readFile(path)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>readFile(<span class="param">path: String</span>)</code>
+                    </div>
+                    <p class="function-description">Reads the entire contents of a file and returns it as a string.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var contents = readFile("data.txt");
+print contents;</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">number(value)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>number(<span class="param">value: String | Number | Bool</span>)</code>
+                    </div>
+                    <p class="function-description">Converts a value to a number. Strings are parsed, booleans become 0 or 1.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var x = number("42");      // 42
+var y = number(true);      // 1
+var z = number("3.14");    // 3.14</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">assert(condition, message?)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Bool</span>
+                        <code>assert(<span class="param">condition: Bool</span>, <span class="param optional">message: String</span>)</code>
+                    </div>
+                    <p class="function-description">Asserts that a condition is true. In test mode, records failures. Otherwise, throws a runtime error.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>assert(x > 0, "x must be positive");
+assert(list.length() > 0);</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">assertEqual(expected, actual)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Bool</span>
+                        <code>assertEqual(<span class="param">expected: Any</span>, <span class="param">actual: Any</span>)</code>
+                    </div>
+                    <p class="function-description">Asserts that two values are equal. In test mode, records failures with detailed message.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>assertEqual(4, 2 + 2);
+assertEqual("hello", greeting);</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="stdlib-math">
+                <h2>Standard Library: Math</h2>
+                <p>Import with: <code>import "stdlib/math";</code></p>
+
+                <div class="function-card">
+                    <h3 class="function-name">PI</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>PI</code>
+                    </div>
+                    <p class="function-description">The mathematical constant π (3.14159265359)</p>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">E</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>E</code>
+                    </div>
+                    <p class="function-description">The mathematical constant e (2.71828182846)</p>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">abs(x)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>abs(<span class="param">x: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns the absolute value of x.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print abs(-5);    // 5
+print abs(3.14);  // 3.14</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">max(a, b)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>max(<span class="param">a: Number</span>, <span class="param">b: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns the larger of two numbers.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print max(10, 20);  // 20</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">min(a, b)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>min(<span class="param">a: Number</span>, <span class="param">b: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns the smaller of two numbers.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print min(10, 20);  // 10</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">pow(base, exp)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>pow(<span class="param">base: Number</span>, <span class="param">exp: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns base raised to the power of exp (using integer exponents).</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print pow(2, 8);   // 256
+print pow(10, 3);  // 1000</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">sqrt(x)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number | Nil</span>
+                        <code>sqrt(<span class="param">x: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns the square root of x using Newton's method. Returns nil if x is negative.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print sqrt(16);   // 4
+print sqrt(2);    // 1.41421...</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="stdlib-string">
+                <h2>Standard Library: String</h2>
+                <p>Import with: <code>import "stdlib/string";</code></p>
+
+                <div class="function-card">
+                    <h3 class="function-name">join(list, delimiter)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>join(<span class="param">list: List</span>, <span class="param">delimiter: String</span>)</code>
+                    </div>
+                    <p class="function-description">Joins all elements in a list into a string, separated by delimiter.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var words = ["Hello", "World"];
+print join(words, " ");  // "Hello World"</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">reverse(str)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>reverse(<span class="param">str: String</span>)</code>
+                    </div>
+                    <p class="function-description">Reverses a string.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print reverse("hello");  // "olleh"</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">startsWith(str, prefix)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Bool</span>
+                        <code>startsWith(<span class="param">str: String</span>, <span class="param">prefix: String</span>)</code>
+                    </div>
+                    <p class="function-description">Returns true if str starts with prefix.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print startsWith("hello", "hel");  // true</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">endsWith(str, suffix)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Bool</span>
+                        <code>endsWith(<span class="param">str: String</span>, <span class="param">suffix: String</span>)</code>
+                    </div>
+                    <p class="function-description">Returns true if str ends with suffix.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print endsWith("hello", "lo");  // true</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="stdlib-list">
+                <h2>Standard Library: List</h2>
+                <p>Import with: <code>import "stdlib/list";</code></p>
+
+                <div class="function-card">
+                    <h3 class="function-name">sort(nums)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>sort(<span class="param">nums: List</span>)</code>
+                    </div>
+                    <p class="function-description">Sorts a list of numbers in ascending order using merge sort (in-place).</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var nums = [5, 2, 8, 1];
+sort(nums);
+print nums;  // [1, 2, 5, 8]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">sortWith(nums, comparator)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>sortWith(<span class="param">nums: List</span>, <span class="param">comparator: Function</span>)</code>
+                    </div>
+                    <p class="function-description">Sorts a list using a custom comparator function. The comparator should return a negative number if a < b, 0 if equal, or positive if a > b.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>fun descendingCompare(a, b) {
+    return b - a;
+}
+var nums = [5, 2, 8, 1];
+sortWith(nums, descendingCompare);</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">slice(list, start, end)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>slice(<span class="param">list: List</span>, <span class="param">start: Number</span>, <span class="param">end: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns a new list containing elements from start (inclusive) to end (exclusive).</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var items = [1, 2, 3, 4, 5];
+var sub = slice(items, 1, 3);  // [2, 3]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">createListWithDefaults(defaultElement, size)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>createListWithDefaults(<span class="param">defaultElement: Any</span>, <span class="param">size: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Creates a new list of a given size, filled with a default element.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var zeros = createListWithDefaults(0, 5);
+// [0, 0, 0, 0, 0]</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="stdlib-test">
+                <h2>Standard Library: Test</h2>
+                <p>Import with: <code>import "stdlib/test";</code></p>
+
+                <div class="function-card">
+                    <h3 class="function-name">suite(name, fn)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Nil</span>
+                        <code>suite(<span class="param">name: String</span>, <span class="param">fn: Function</span>)</code>
+                    </div>
+                    <p class="function-description">Creates a test suite with a given name. The function should contain test() calls.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>suite("Math operations", fun() {
+    test("should add", fun() {
+        assertEqual(4, 2 + 2);
+    });
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">test(description, testFn)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Nil</span>
+                        <code>test(<span class="param">description: String</span>, <span class="param">testFn: Function</span>)</code>
+                    </div>
+                    <p class="function-description">Defines an individual test case. Use assert() or assertEqual() inside.</p>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">run()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Nil</span>
+                        <code>run()</code>
+                    </div>
+                    <p class="function-description">Exits test mode. Call this at the end of your test file.</p>
+                </div>
+            </section>
+
+            <section id="string-methods">
+                <h2>String Methods</h2>
+                <p>These methods are available on all string values.</p>
+
+                <div class="function-card">
+                    <h3 class="function-name">length()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>str.length()</code>
+                    </div>
+                    <p class="function-description">Returns the number of characters in the string.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print "hello".length();  // 5</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">split(delimiter)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>str.split(<span class="param">delimiter: String</span>)</code>
+                    </div>
+                    <p class="function-description">Splits a string into a list of substrings using delimiter. If delimiter is empty string, splits into individual characters.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var parts = "a,b,c".split(",");  // ["a", "b", "c"]
+var chars = "hello".split("");   // ["h", "e", "l", "l", "o"]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">charAt(index)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>str.charAt(<span class="param">index: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns the character at the given index. Supports negative indices (counting from end).</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print "hello".charAt(0);   // "h"
+print "hello".charAt(-1);  // "o"</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">slice(start, end?)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>str.slice(<span class="param">start: Number</span>, <span class="param optional">end: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns a substring from start (inclusive) to end (exclusive). Supports negative indices. If end is omitted, slices to the end of the string.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print "hello".slice(1, 4);  // "ell"
+print "hello".slice(2);     // "llo"
+print "hello".slice(-2);    // "lo"</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">replace(search, replacement)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>str.replace(<span class="param">search: String</span>, <span class="param">replacement: String</span>)</code>
+                    </div>
+                    <p class="function-description">Returns a new string with all occurrences of the search string replaced by the replacement string. The original string is not modified.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print "Hello World".replace("World", "CMEL");  // "Hello CMEL"
+print "hello".replace("l", "L");               // "heLLo"
+print "test".replace("t", "");                 // "es"</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">trim()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>str.trim()</code>
+                    </div>
+                    <p class="function-description">Returns a new string with leading and trailing whitespace removed. Whitespace includes spaces, tabs, newlines (\n), and carriage returns (\r). Whitespace in the middle of the string is preserved.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print "  hello  ".trim();           // "hello"
+print "\t\nhello world\r\n".trim(); // "hello world"
+print "  hello   world  ".trim();   // "hello   world"</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="list-methods">
+                <h2>List Methods</h2>
+                <p>These methods are available on all list values.</p>
+
+                <div class="function-card">
+                    <h3 class="function-name">add(item)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>list.add(<span class="param">item: Any</span>)</code>
+                    </div>
+                    <p class="function-description">Appends an item to the end of the list.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var nums = [1, 2];
+nums.add(3);  // [1, 2, 3]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">remove(index)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>list.remove(<span class="param">index: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Removes the item at the given index.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var nums = [1, 2, 3];
+nums.remove(1);  // [1, 3]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">length()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>list.length()</code>
+                    </div>
+                    <p class="function-description">Returns the number of items in the list.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print [1, 2, 3].length();  // 3</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">map(transform)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>list.map(<span class="param">transform: Function</span>)</code>
+                    </div>
+                    <p class="function-description">Returns a new list with each element transformed by the function.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var nums = [1, 2, 3];
+var doubled = nums.map(fun(x) { return x * 2; });
+// [2, 4, 6]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">filter(predicate)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>list.filter(<span class="param">predicate: Function</span>)</code>
+                    </div>
+                    <p class="function-description">Returns a new list containing only elements where predicate returns true.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var nums = [1, 2, 3, 4];
+var evens = nums.filter(fun(x) { return x % 2 == 0; });
+// [2, 4]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">find(predicate)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Any | Nil</span>
+                        <code>list.find(<span class="param">predicate: Function</span>)</code>
+                    </div>
+                    <p class="function-description">Returns the first element where predicate returns true, or nil if not found.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var nums = [1, 2, 3, 4];
+var found = nums.find(fun(x) { return x > 2; });
+// 3</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">contains(value)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Bool</span>
+                        <code>list.contains(<span class="param">value: Any</span>)</code>
+                    </div>
+                    <p class="function-description">Returns true if the list contains the value.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print [1, 2, 3].contains(2);  // true</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">reverse()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>list.reverse()</code>
+                    </div>
+                    <p class="function-description">Returns a new list with elements in reverse order.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var nums = [1, 2, 3];
+var rev = nums.reverse();  // [3, 2, 1]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">sum()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>list.sum()</code>
+                    </div>
+                    <p class="function-description">Returns the sum of all numeric elements in the list.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>print [1, 2, 3, 4].sum();  // 10</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="map-methods">
+                <h2>Map Methods</h2>
+                <p>These methods are available on all map values (hash tables with string keys).</p>
+
+                <div class="function-card">
+                    <h3 class="function-name">keys()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>map.keys()</code>
+                    </div>
+                    <p class="function-description">Returns a list of all keys in the map.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var person = {"name": "Alice", "age": 30};
+print person.keys();  // ["name", "age"]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">values()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>map.values()</code>
+                    </div>
+                    <p class="function-description">Returns a list of all values in the map.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var person = {"name": "Alice", "age": 30};
+print person.values();  // ["Alice", 30]</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">has(key)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Bool</span>
+                        <code>map.has(<span class="param">key: String</span>)</code>
+                    </div>
+                    <p class="function-description">Returns true if the map contains the given key.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var person = {"name": "Alice"};
+print person.has("name");  // true
+print person.has("age");   // false</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">remove(key)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Map</span>
+                        <code>map.remove(<span class="param">key: String</span>)</code>
+                    </div>
+                    <p class="function-description">Removes the entry with the given key from the map.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var person = {"name": "Alice", "age": 30};
+person.remove("age");</code></pre>
+                    </div>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">length()</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>map.length()</code>
+                    </div>
+                    <p class="function-description">Returns the number of key-value pairs in the map.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var person = {"name": "Alice", "age": 30};
+print person.length();  // 2</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <footer>
+                <p>CMEL Language Documentation - A bytecode VM implementation of Lox</p>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>

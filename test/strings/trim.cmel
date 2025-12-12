@@ -1,0 +1,37 @@
+// Basic trim - spaces on both sides
+print "  hello  ".trim();
+// expect: hello
+
+// Trim left only
+print "  hello".trim();
+// expect: hello
+
+// Trim right only
+print "hello  ".trim();
+// expect: hello
+
+// No trimming needed
+print "hello".trim();
+// expect: hello
+
+// Multiple whitespace types
+print "\t\n  hello world  \r\n".trim();
+// expect: hello world
+
+// All whitespace - return empty
+print "   \t\n".trim();
+// expect:
+
+// Empty string
+print "".trim();
+// expect:
+
+// Whitespace in middle is preserved
+print "  hello   world  ".trim();
+// expect: hello   world
+
+// Store and call later
+var str = "  test  ";
+var trimmer = str.trim;
+print trimmer();
+// expect: test

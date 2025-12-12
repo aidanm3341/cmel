@@ -1,0 +1,44 @@
+// Basic replace
+print "Hello World".replace("World", "Cmel");
+// expect: Hello Cmel
+
+print "hello".replace("l", "L");
+// expect: heLLo
+
+// Replace with empty string (removal)
+print "Hello World".replace("o", "");
+// expect: Hell Wrld
+
+// No match found - return original
+print "test".replace("xyz", "abc");
+// expect: test
+
+// Empty search string - return original
+print "test".replace("", "x");
+// expect: test
+
+// Replace entire string
+print "old".replace("old", "new");
+// expect: new
+
+// Multiple occurrences
+print "aaa".replace("a", "b");
+// expect: bbb
+
+// Replace with longer string
+print "hi".replace("i", "ello");
+// expect: hello
+
+// Replace with shorter string
+print "hello".replace("ello", "i");
+// expect: hi
+
+// Case sensitive
+print "Hello".replace("hello", "Hi");
+// expect: Hello
+
+// Store and call later
+var str = "foo bar";
+var replacer = str.replace;
+print replacer("bar", "baz");
+// expect: foo baz

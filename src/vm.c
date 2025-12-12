@@ -494,6 +494,114 @@ static Value sliceNative(int argCount, Value* args) {
     return OBJ_VAL(result);
 }
 
+static Value stringReplaceNative(int argCount, Value* args) {
+    if (!IS_STRING(args[0])) {
+        runtimeError("replace() 'search' argument must be a string.");
+        return ERROR_VAL();
+    }
+    if (!IS_STRING(args[1])) {
+        runtimeError("replace() 'replacement' argument must be a string.");
+        return ERROR_VAL();
+    }
+
+    ObjString* searchStr = AS_STRING(args[0]);
+    ObjString* replaceStr = AS_STRING(args[1]);
+    ObjString* originalStr = AS_STRING(args[2]);
+
+    // Empty search string - return original
+    if (searchStr->length == 0) {
+        return OBJ_VAL(originalStr);
+    }
+
+    // Count occurrences to calculate result size
+    int count = 0;
+    for (int i = 0; i <= originalStr->length - searchStr->length; i++) {
+        if (memcmp(originalStr->chars + i, searchStr->chars, searchStr->length) == 0) {
+            count++;
+            i += searchStr->length - 1; // Skip past the match
+        }
+    }
+
+    // No matches - return original string
+    if (count == 0) {
+        return OBJ_VAL(originalStr);
+    }
+
+    // Calculate new length
+    int newLength = originalStr->length - (count * searchStr->length) + (count * replaceStr->length);
+
+    // Allocate new string
+    char* chars = ALLOCATE(char, newLength + 1);
+    pushTempRoot(OBJ_VAL(originalStr)); // Protect from GC during allocation
+
+    int pos = 0;
+    int i = 0;
+    while (i < originalStr->length) {
+        // Check if we found a match
+        if (i <= originalStr->length - searchStr->length &&
+            memcmp(originalStr->chars + i, searchStr->chars, searchStr->length) == 0) {
+            // Copy replacement string
+            memcpy(chars + pos, replaceStr->chars, replaceStr->length);
+            pos += replaceStr->length;
+            i += searchStr->length;
+        } else {
+            // Copy original character
+            chars[pos++] = originalStr->chars[i++];
+        }
+    }
+    chars[newLength] = '\0';
+
+    ObjString* result = takeString(chars, newLength);
+    popTempRoot();
+    return OBJ_VAL(result);
+}
+
+static Value stringTrimNative(int argCount, Value* args) {
+    ObjString* string = AS_STRING(args[0]);
+
+    // Empty string - return as is
+    if (string->length == 0) {
+        return OBJ_VAL(string);
+    }
+
+    // Find first non-whitespace character
+    int start = 0;
+    while (start < string->length &&
+           (string->chars[start] == ' ' ||
+            string->chars[start] == '\t' ||
+            string->chars[start] == '\n' ||
+            string->chars[start] == '\r')) {
+        start++;
+    }
+
+    // All whitespace - return empty string
+    if (start == string->length) {
+        return OBJ_VAL(copyString("", 0));
+    }
+
+    // Find last non-whitespace character
+    int end = string->length - 1;
+    while (end >= start &&
+           (string->chars[end] == ' ' ||
+            string->chars[end] == '\t' ||
+            string->chars[end] == '\n' ||
+            string->chars[end] == '\r')) {
+        end--;
+    }
+
+    // Calculate trimmed length
+    int length = end - start + 1;
+
+    // No trimming needed - return original
+    if (start == 0 && length == string->length) {
+        return OBJ_VAL(string);
+    }
+
+    // Create trimmed string
+    ObjString* result = copyString(string->chars + start, length);
+    return OBJ_VAL(result);
+}
+
 static Value numberNative(int argCount, Value* args) {
     Value val = args[0];
     if (IS_NUMBER(val)) {
@@ -664,6 +772,8 @@ void initVM() {
     definePrimitive(vm.stringClass, "split", stringSplitNative, 2);
     definePrimitive(vm.stringClass, "charAt", charAtNative, 2);
     definePrimitive(vm.stringClass, "slice", sliceNative, 2);
+    definePrimitive(vm.stringClass, "replace", stringReplaceNative, 3);
+    definePrimitive(vm.stringClass, "trim", stringTrimNative, 1);
 
     vm.numberClass = newClass(copyString("Number", 6));
     definePrimitive(vm.numberClass, "add", addNumberNative, 2);

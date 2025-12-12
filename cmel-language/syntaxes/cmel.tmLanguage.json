@@ -6,19 +6,25 @@
 			"include": "#comments"
 		},
 		{
+			"include": "#strings"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#constants"
+		},
+		{
 			"include": "#keywords"
+		},
+		{
+			"include": "#operators"
 		},
 		{
 			"include": "#function-declaration"
 		},
 		{
 			"include": "#function-call"
-		},
-		{
-			"include": "#strings"
-		},
-		{
-			"include": "#numbers"
 		}
 	],
 	"repository": {
@@ -75,30 +81,46 @@
 		"keywords": {
 			"patterns": [
                 {
-                    "name": "keyword.control.cmel",
+                    "name": "keyword.control.flow.cmel",
                     "match": "\\b(if|else|while|for|return|break)\\b"
                 },
                 {
-                    "name": "keyword.control.cmel",
+                    "name": "storage.type.cmel",
                     "match": "\\b(var|const)\\b"
                 },
                 {
                     "name": "keyword.control.import.cmel",
-                    "match": "\\b(import|from|export)\\b"
+                    "match": "\\b(import|export|from)\\b"
                 },
                 {
                     "name": "keyword.operator.logical.cmel",
-                    "match": "\\b(or|and)\\b"
+                    "match": "\\b(and|or|not)\\b"
                 },
                 {
                     "name": "support.function.builtin.cmel",
-                    "match": "\\b(print)\\b"
+                    "match": "\\b(print|clock|input|readFile|number)\\b"
                 },
                 {
-                    "name": "keyword.control.cmel",
-                    "match": "\\b(class|this|super)\\b"
+                    "name": "storage.type.class.cmel",
+                    "match": "\\b(class)\\b"
+                },
+                {
+                    "name": "variable.language.cmel",
+                    "match": "\\b(this|super)\\b"
                 }
             ]
+		},
+		"constants": {
+			"patterns": [
+				{
+					"name": "constant.language.boolean.cmel",
+					"match": "\\b(true|false)\\b"
+				},
+				{
+					"name": "constant.language.null.cmel",
+					"match": "\\b(nil)\\b"
+				}
+			]
 		},
 		"strings": {
 			"name": "string.quoted.double.cmel",
@@ -107,7 +129,7 @@
 			"patterns": [
 				{
 					"name": "constant.character.escape.cmel",
-					"match": "\\\\[ntr\"\\\\]"
+					"match": "\\\\[ntr\"\\\\e]"
 				},
 				{
 					"name": "invalid.illegal.escape.cmel",
@@ -118,6 +140,26 @@
 		"numbers": {
 			"name": "constant.numeric.cmel",
 			"match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+		},
+		"operators": {
+			"patterns": [
+				{
+					"name": "keyword.operator.arithmetic.cmel",
+					"match": "[+\\-*/%]"
+				},
+				{
+					"name": "keyword.operator.comparison.cmel",
+					"match": "(==|!=|<=|>=|<|>)"
+				},
+				{
+					"name": "keyword.operator.assignment.cmel",
+					"match": "="
+				},
+				{
+					"name": "keyword.operator.logical.cmel",
+					"match": "!"
+				}
+			]
 		}
 	},
 	"scopeName": "source.cmel"
