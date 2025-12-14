@@ -16,11 +16,13 @@
             <nav>
                 <ul>
                     <li><a href="#introduction">Introduction</a></li>
-                    <li><a href="#native-functions">Native Functions</a></li>
+                    <li><a href="#native-functions">I/O Functions</a></li>
+                    <li class="section-header">Built-in Functions (Native)</li>
+                    <li><a href="#stdlib-convert">Type Conversion</a></li>
+                    <li><a href="#stdlib-math">Math Functions</a></li>
+                    <li><a href="#stdlib-string">String Functions</a></li>
+                    <li><a href="#stdlib-list">List Functions</a></li>
                     <li class="section-header">Standard Library</li>
-                    <li><a href="#stdlib-math">Math</a></li>
-                    <li><a href="#stdlib-string">String</a></li>
-                    <li><a href="#stdlib-list">List</a></li>
                     <li><a href="#stdlib-test">Test</a></li>
                     <li class="section-header">Built-in Methods</li>
                     <li><a href="#string-methods">String Methods</a></li>
@@ -38,8 +40,13 @@
             </section>
 
             <section id="native-functions">
-                <h2>Native Functions</h2>
-                <p>These functions are built into the CMEL runtime and are available globally without importing.</p>
+                <h2>I/O Functions (Native - Import Required)</h2>
+                <p><strong>Import from stdlib/io module to use these functions.</strong></p>
+                <p class="migration-note">⚠️ Breaking change: These native functions now require explicit imports and are no longer available globally.</p>
+                <div class="function-example">
+                    <h4>Import Example:</h4>
+                    <pre><code>import clock, input, readFile from "stdlib/io";</code></pre>
+                </div>
 
                 <div class="function-card">
                     <h3 class="function-name">clock()</h3>
@@ -86,19 +93,11 @@ print contents;</code></pre>
                     </div>
                 </div>
 
-                <div class="function-card">
-                    <h3 class="function-name">number(value)</h3>
-                    <div class="function-signature">
-                        <span class="return-type">Number</span>
-                        <code>number(<span class="param">value: String | Number | Bool</span>)</code>
-                    </div>
-                    <p class="function-description">Converts a value to a number. Strings are parsed, booleans become 0 or 1.</p>
-                    <div class="function-example">
-                        <h4>Example:</h4>
-                        <pre><code>var x = number("42");      // 42
-var y = number(true);      // 1
-var z = number("3.14");    // 3.14</code></pre>
-                    </div>
+                <h3 style="margin-top: 2rem;">Testing Functions (Import from stdlib/test)</h3>
+                <p><strong>Import these from stdlib/test module.</strong></p>
+                <div class="function-example">
+                    <h4>Import Example:</h4>
+                    <pre><code>import assert, assertEqual from "stdlib/test";</code></pre>
                 </div>
 
                 <div class="function-card">
@@ -130,9 +129,41 @@ assertEqual("hello", greeting);</code></pre>
                 </div>
             </section>
 
+            <section id="stdlib-convert">
+                <h2>Type Conversion Functions (Native - Import Required)</h2>
+                <p><strong>Import from stdlib/convert module to use these functions.</strong></p>
+                <p class="migration-note">⚠️ Breaking change: These native functions now require explicit imports and are no longer available globally.</p>
+                <div class="function-example">
+                    <h4>Import Example:</h4>
+                    <pre><code>import number from "stdlib/convert";</code></pre>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">number(value)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">Number</span>
+                        <code>number(<span class="param">value: String | Number | Bool</span>)</code>
+                    </div>
+                    <p class="function-description">Converts a value to a number. Strings are parsed, booleans become 0 or 1.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>import number from "stdlib/convert";
+
+var x = number("42");      // 42
+var y = number(true);      // 1
+var z = number("3.14");    // 3.14</code></pre>
+                    </div>
+                </div>
+            </section>
+
             <section id="stdlib-math">
-                <h2>Standard Library: Math</h2>
-                <p>Import with: <code>import "stdlib/math";</code></p>
+                <h2>Math Functions (Native - Import Required)</h2>
+                <p><strong>Import from stdlib/math module to use these functions.</strong></p>
+                <p class="migration-note">⚠️ Breaking change: These native functions now require explicit imports and are no longer available globally.</p>
+                <div class="function-example">
+                    <h4>Import Example:</h4>
+                    <pre><code>import PI, abs, sqrt from "stdlib/math";</code></pre>
+                </div>
 
                 <div class="function-card">
                     <h3 class="function-name">PI</h3>
@@ -222,8 +253,13 @@ print sqrt(2);    // 1.41421...</code></pre>
             </section>
 
             <section id="stdlib-string">
-                <h2>Standard Library: String</h2>
-                <p>Import with: <code>import "stdlib/string";</code></p>
+                <h2>String Functions (Native - Import Required)</h2>
+                <p><strong>Import from stdlib/string module to use these functions.</strong></p>
+                <p class="migration-note">⚠️ Breaking change: These native functions now require explicit imports and are no longer available globally.</p>
+                <div class="function-example">
+                    <h4>Import Example:</h4>
+                    <pre><code>import join, startsWith, endsWith from "stdlib/string";</code></pre>
+                </div>
 
                 <div class="function-card">
                     <h3 class="function-name">join(list, delimiter)</h3>
@@ -231,24 +267,14 @@ print sqrt(2);    // 1.41421...</code></pre>
                         <span class="return-type">String</span>
                         <code>join(<span class="param">list: List</span>, <span class="param">delimiter: String</span>)</code>
                     </div>
-                    <p class="function-description">Joins all elements in a list into a string, separated by delimiter.</p>
+                    <p class="function-description">Joins all elements in a list into a string, separated by delimiter. Automatically converts non-string values to strings.</p>
                     <div class="function-example">
                         <h4>Example:</h4>
                         <pre><code>var words = ["Hello", "World"];
-print join(words, " ");  // "Hello World"</code></pre>
-                    </div>
-                </div>
+print join(words, " ");  // "Hello World"
 
-                <div class="function-card">
-                    <h3 class="function-name">reverse(str)</h3>
-                    <div class="function-signature">
-                        <span class="return-type">String</span>
-                        <code>reverse(<span class="param">str: String</span>)</code>
-                    </div>
-                    <p class="function-description">Reverses a string.</p>
-                    <div class="function-example">
-                        <h4>Example:</h4>
-                        <pre><code>print reverse("hello");  // "olleh"</code></pre>
+var mixed = [1, "test", true];
+print join(mixed, ", ");  // "1, test, true"</code></pre>
                     </div>
                 </div>
 
@@ -277,10 +303,50 @@ print join(words, " ");  // "Hello World"</code></pre>
                         <pre><code>print endsWith("hello", "lo");  // true</code></pre>
                     </div>
                 </div>
+
+                <h3 style="margin-top: 2em;">Standard Library: String (stdlib/string)</h3>
+                <p>Import with: <code>import "stdlib/string";</code></p>
+
+                <div class="function-card">
+                    <h3 class="function-name">reverse(str)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">String</span>
+                        <code>reverse(<span class="param">str: String</span>)</code>
+                    </div>
+                    <p class="function-description">Reverses a string. Still available in stdlib.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>import reverse from "stdlib/string";
+print reverse("hello");  // "olleh"</code></pre>
+                    </div>
+                </div>
             </section>
 
             <section id="stdlib-list">
-                <h2>Standard Library: List</h2>
+                <h2>List Functions (Native - Import Required)</h2>
+                <p><strong>Import from stdlib/list module to use these functions.</strong></p>
+                <p class="migration-note">⚠️ Breaking change: This native function now requires explicit import and is no longer available globally.</p>
+                <div class="function-example">
+                    <h4>Import Example:</h4>
+                    <pre><code>import slice from "stdlib/list";</code></pre>
+                </div>
+
+                <div class="function-card">
+                    <h3 class="function-name">slice(list, start, end)</h3>
+                    <div class="function-signature">
+                        <span class="return-type">List</span>
+                        <code>slice(<span class="param">list: List</span>, <span class="param">start: Number</span>, <span class="param">end: Number</span>)</code>
+                    </div>
+                    <p class="function-description">Returns a new list containing elements from start (inclusive) to end (exclusive). Supports negative indices.</p>
+                    <div class="function-example">
+                        <h4>Example:</h4>
+                        <pre><code>var items = [1, 2, 3, 4, 5];
+var sub = slice(items, 1, 3);    // [2, 3]
+var last = slice(items, -2, 5);  // [4, 5]</code></pre>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 2em;">Standard Library: List (stdlib/list)</h3>
                 <p>Import with: <code>import "stdlib/list";</code></p>
 
                 <div class="function-card">
@@ -292,7 +358,8 @@ print join(words, " ");  // "Hello World"</code></pre>
                     <p class="function-description">Sorts a list of numbers in ascending order using merge sort (in-place).</p>
                     <div class="function-example">
                         <h4>Example:</h4>
-                        <pre><code>var nums = [5, 2, 8, 1];
+                        <pre><code>import sort from "stdlib/list";
+var nums = [5, 2, 8, 1];
 sort(nums);
 print nums;  // [1, 2, 5, 8]</code></pre>
                     </div>
@@ -307,25 +374,12 @@ print nums;  // [1, 2, 5, 8]</code></pre>
                     <p class="function-description">Sorts a list using a custom comparator function. The comparator should return a negative number if a < b, 0 if equal, or positive if a > b.</p>
                     <div class="function-example">
                         <h4>Example:</h4>
-                        <pre><code>fun descendingCompare(a, b) {
+                        <pre><code>import sortWith from "stdlib/list";
+fun descendingCompare(a, b) {
     return b - a;
 }
 var nums = [5, 2, 8, 1];
 sortWith(nums, descendingCompare);</code></pre>
-                    </div>
-                </div>
-
-                <div class="function-card">
-                    <h3 class="function-name">slice(list, start, end)</h3>
-                    <div class="function-signature">
-                        <span class="return-type">List</span>
-                        <code>slice(<span class="param">list: List</span>, <span class="param">start: Number</span>, <span class="param">end: Number</span>)</code>
-                    </div>
-                    <p class="function-description">Returns a new list containing elements from start (inclusive) to end (exclusive).</p>
-                    <div class="function-example">
-                        <h4>Example:</h4>
-                        <pre><code>var items = [1, 2, 3, 4, 5];
-var sub = slice(items, 1, 3);  // [2, 3]</code></pre>
                     </div>
                 </div>
 
@@ -338,7 +392,8 @@ var sub = slice(items, 1, 3);  // [2, 3]</code></pre>
                     <p class="function-description">Creates a new list of a given size, filled with a default element.</p>
                     <div class="function-example">
                         <h4>Example:</h4>
-                        <pre><code>var zeros = createListWithDefaults(0, 5);
+                        <pre><code>import createListWithDefaults from "stdlib/list";
+var zeros = createListWithDefaults(0, 5);
 // [0, 0, 0, 0, 0]</code></pre>
                     </div>
                 </div>

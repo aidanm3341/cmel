@@ -35,3 +35,7 @@ export fun test(description, testFn) {
 export fun run() {
     __exitTestMode();
 }
+
+// Export assertion functions
+export var assert = __assert;
+export var assertEqual = __assertEqual;

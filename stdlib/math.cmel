@@ -1,41 +1,8 @@
-// Math utilities
-
+// Math module - exports native math functions
 export var PI = 3.14159265359;
 export var E = 2.71828182846;
-
-export fun abs(x) {
-    if (x < 0) return -x;
-    return x;
-}
-
-export fun max(a, b) {
-    if (a > b) return a;
-    return b;
-}
-
-export fun min(a, b) {
-    if (a < b) return a;
-    return b;
-}
-
-export fun pow(base, exp) {
-    var result = 1;
-    for (var i = 0; i < exp; i = i + 1) {
-        result = result * base;
-    }
-    return result;
-}
-
-export fun sqrt(x) {
-    if (x < 0) return nil;
-    if (x == 0) return 0;
-
-    var guess = x / 2;
-    var epsilon = 0.00001;
-
-    while (abs(guess * guess - x) > epsilon) {
-        guess = (guess + x / guess) / 2;
-    }
-
-    return guess;
-}
+export var abs = __abs;
+export var max = __max;
+export var min = __min;
+export var pow = __pow;
+export var sqrt = __sqrt;

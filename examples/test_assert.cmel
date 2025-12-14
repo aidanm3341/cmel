@@ -1,4 +1,4 @@
-import "stdlib/test";
+import suite, test, run, assert from "stdlib/test";
 
 suite("Assert function", fun() {
     test("should pass with true condition", fun() {

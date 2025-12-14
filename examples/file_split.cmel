@@ -1,3 +1,5 @@
+import readFile from "stdlib/io";
+
 var planets = readFile("examples/planets.txt").split("\n");
 
 for (var i = 0; i < planets.length(); i = i+1) {

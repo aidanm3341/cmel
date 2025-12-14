@@ -1,0 +1,4 @@
+// I/O module - exports native I/O functions
+export var clock = __clock;
+export var input = __input;
+export var readFile = __readFile;

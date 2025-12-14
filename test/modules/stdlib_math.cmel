@@ -1,3 +1,4 @@
+// Test stdlib math module
 import PI, E, abs, max, min, pow, sqrt from "stdlib/math";
 
 print PI;

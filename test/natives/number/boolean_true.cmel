@@ -1,2 +1,3 @@
+import number from "stdlib/convert";
 print number(true);
 // expect: 1

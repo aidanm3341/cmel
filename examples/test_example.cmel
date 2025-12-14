@@ -1,4 +1,4 @@
-import suite, test, run from "stdlib/test";
+import suite, test, run, assert, assertEqual from "stdlib/test";
 
 suite("Basic assertions", fun() {
     test("should pass when condition is true", fun() {

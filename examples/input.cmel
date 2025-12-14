@@ -1,3 +1,5 @@
+import input from "stdlib/io";
+
 print "Please enter a value: ";
 var x = input();
 print "Your value is: " + x;

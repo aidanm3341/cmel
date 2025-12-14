@@ -1,0 +1,61 @@
+// Test string native functions
+import startsWith, endsWith, join from "stdlib/string";
+
+// startsWith tests
+print startsWith("hello", "hel");
+// expect: true
+
+print startsWith("hello", "world");
+// expect: false
+
+print startsWith("hello", "");
+// expect: true
+
+print startsWith("hello", "hello!");
+// expect: false
+
+print startsWith("", "");
+// expect: true
+
+print startsWith("test", "testing");
+// expect: false
+
+// endsWith tests
+print endsWith("hello", "llo");
+// expect: true
+
+print endsWith("hello", "world");
+// expect: false
+
+print endsWith("hello", "");
+// expect: true
+
+print endsWith("hello", "!hello");
+// expect: false
+
+print endsWith("", "");
+// expect: true
+
+print endsWith("test", "testing");
+// expect: false
+
+// join tests with auto-conversion
+var nums = [1, 2, 3, 4, 5];
+print join(nums, ", ");
+// expect: 1, 2, 3, 4, 5
+
+var mixed = [1, "hello", true, 3.14, false];
+print join(mixed, " | ");
+// expect: 1 | hello | true | 3.14 | false
+
+var strings = ["a", "b", "c"];
+print join(strings, "");
+// expect: abc
+
+var empty = [];
+print join(empty, ",");
+// expect:
+
+var single = ["one"];
+print join(single, ",");
+// expect: one

@@ -1,0 +1,68 @@
+// Test math native functions
+import abs, max, min, pow, sqrt, PI, E from "stdlib/math";
+
+// abs tests
+print abs(-42);
+// expect: 42
+
+print abs(42);
+// expect: 42
+
+print abs(0);
+// expect: 0
+
+print abs(-3.14);
+// expect: 3.14
+
+// max tests
+print max(10, 20);
+// expect: 20
+
+print max(20, 10);
+// expect: 20
+
+print max(-5, -10);
+// expect: -5
+
+// min tests
+print min(10, 20);
+// expect: 10
+
+print min(20, 10);
+// expect: 10
+
+print min(-5, -10);
+// expect: -10
+
+// pow tests
+print pow(2, 8);
+// expect: 256
+
+print pow(2.5, 2);
+// expect: 6.25
+
+print pow(10, 0);
+// expect: 1
+
+print pow(5, 3);
+// expect: 125
+
+// sqrt tests
+print sqrt(144);
+// expect: 12
+
+print sqrt(0);
+// expect: 0
+
+print sqrt(2.25);
+// expect: 1.5
+
+print sqrt(-1);
+// expect: nil
+
+// Constants
+print PI;
+// expect: 3.14159
+
+print E;
+// expect: 2.71828

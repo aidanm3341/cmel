@@ -134,6 +134,8 @@ export class ModuleResolver {
     // (return a pseudo-path so the language server knows it's valid)
     if (normalizedPath.startsWith("stdlib/")) {
       const embeddedStdlib = [
+        "stdlib/convert",
+        "stdlib/io",
         "stdlib/math",
         "stdlib/string",
         "stdlib/list",
@@ -235,7 +237,27 @@ export class ModuleResolver {
     const exports = new Map<string, ExportInfo>();
 
     // Define exports for each stdlib module
-    if (filePath.includes("stdlib/math") || filePath.includes("stdlib\\math")) {
+    if (filePath.includes("stdlib/convert") || filePath.includes("stdlib\\convert")) {
+      ["number"].forEach((name) => {
+        exports.set(name, {
+          name,
+          kind: "function",
+          isConst: true,
+          token: dummyToken,
+          node: {} as any,
+        });
+      });
+    } else if (filePath.includes("stdlib/io") || filePath.includes("stdlib\\io")) {
+      ["clock", "input", "readFile"].forEach((name) => {
+        exports.set(name, {
+          name,
+          kind: "function",
+          isConst: true,
+          token: dummyToken,
+          node: {} as any,
+        });
+      });
+    } else if (filePath.includes("stdlib/math") || filePath.includes("stdlib\\math")) {
       ["PI", "E"].forEach((name) => {
         exports.set(name, {
           name,
@@ -290,10 +312,8 @@ export class ModuleResolver {
         "suite",
         "test",
         "run",
-        "beforeEach",
-        "afterEach",
-        "beforeAll",
-        "afterAll",
+        "assert",
+        "assertEqual",
       ].forEach((name) => {
         exports.set(name, {
           name,

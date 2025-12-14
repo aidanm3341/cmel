@@ -1,0 +1,2 @@
+// Convert module - exports type conversion utilities
+export var number = __number;

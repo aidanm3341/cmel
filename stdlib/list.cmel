@@ -1,3 +1,8 @@
+// List module - exports native list functions
+import number from "stdlib/convert";
+
+export var slice = __slice;
+
 export fun createListWithDefaults(defaultElement, size) {
     var newList = [];
     for (var i = 0; i < size; i = i+1) {
@@ -132,12 +137,4 @@ export fun sort(nums) {
 
 export fun sortWith(nums, comparator) {
     return mergeSortWithComparator(nums, 0, nums.length() - 1, comparator);
-}
-
-export fun slice(list, start, end) {
-    var newList = [];
-    for (var i=start; i<end; i=i+1) {
-        newList.add(list[i]);
-    }
-    return newList;
 }

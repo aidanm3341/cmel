@@ -706,6 +706,187 @@ static Value assertEqualNative(int argCount, Value* args) {
     return BOOL_VAL(true);
 }
 
+// Math native functions
+static Value absNative(int argCount, Value* args) {
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("abs() argument must be a number.");
+        return ERROR_VAL();
+    }
+    double value = AS_NUMBER(args[0]);
+    return NUMBER_VAL(value < 0 ? -value : value);
+}
+
+static Value maxNative(int argCount, Value* args) {
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+        runtimeError("max() arguments must be numbers.");
+        return ERROR_VAL();
+    }
+    double a = AS_NUMBER(args[0]);
+    double b = AS_NUMBER(args[1]);
+    return NUMBER_VAL(a > b ? a : b);
+}
+
+static Value minNative(int argCount, Value* args) {
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+        runtimeError("min() arguments must be numbers.");
+        return ERROR_VAL();
+    }
+    double a = AS_NUMBER(args[0]);
+    double b = AS_NUMBER(args[1]);
+    return NUMBER_VAL(a < b ? a : b);
+}
+
+static Value powNative(int argCount, Value* args) {
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+        runtimeError("pow() arguments must be numbers.");
+        return ERROR_VAL();
+    }
+    double base = AS_NUMBER(args[0]);
+    double exponent = AS_NUMBER(args[1]);
+    return NUMBER_VAL(pow(base, exponent));
+}
+
+static Value sqrtNative(int argCount, Value* args) {
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("sqrt() argument must be a number.");
+        return ERROR_VAL();
+    }
+    double value = AS_NUMBER(args[0]);
+    if (value < 0) {
+        return NIL_VAL;
+    }
+    return NUMBER_VAL(sqrt(value));
+}
+
+// String native functions
+static Value startsWithNative(int argCount, Value* args) {
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError("startsWith() arguments must be strings.");
+        return ERROR_VAL();
+    }
+
+    ObjString* str = AS_STRING(args[0]);
+    ObjString* prefix = AS_STRING(args[1]);
+
+    if (prefix->length > str->length) return BOOL_VAL(false);
+    if (prefix->length == 0) return BOOL_VAL(true);
+
+    return BOOL_VAL(memcmp(str->chars, prefix->chars, prefix->length) == 0);
+}
+
+static Value endsWithNative(int argCount, Value* args) {
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError("endsWith() arguments must be strings.");
+        return ERROR_VAL();
+    }
+
+    ObjString* str = AS_STRING(args[0]);
+    ObjString* suffix = AS_STRING(args[1]);
+
+    if (suffix->length > str->length) return BOOL_VAL(false);
+    if (suffix->length == 0) return BOOL_VAL(true);
+
+    int startPos = str->length - suffix->length;
+    return BOOL_VAL(memcmp(str->chars + startPos, suffix->chars, suffix->length) == 0);
+}
+
+static Value joinNative(int argCount, Value* args) {
+    if (!IS_LIST(args[0])) {
+        runtimeError("First argument must be a list.");
+        return ERROR_VAL();
+    }
+    if (!IS_STRING(args[1])) {
+        runtimeError("Second argument must be a string.");
+        return ERROR_VAL();
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    ObjString* delimiter = AS_STRING(args[1]);
+
+    // Empty list returns empty string
+    if (list->count == 0) {
+        return OBJ_VAL(copyString("", 0));
+    }
+
+    // Convert all elements to strings and calculate total length
+    ObjString** strings = ALLOCATE(ObjString*, list->count);
+    pushTempRoot(OBJ_VAL(list)); // Protect list
+
+    int totalLength = 0;
+    for (int i = 0; i < list->count; i++) {
+        Value element = list->items[i];
+
+        // Convert to string using valueToString helper
+        strings[i] = valueToString(element);
+        pushTempRoot(OBJ_VAL(strings[i])); // Protect each string
+
+        totalLength += strings[i]->length;
+        if (i < list->count - 1) {
+            totalLength += delimiter->length;
+        }
+    }
+
+    // Allocate result buffer
+    char* chars = ALLOCATE(char, totalLength + 1);
+    int pos = 0;
+
+    // Copy strings with delimiters
+    for (int i = 0; i < list->count; i++) {
+        memcpy(chars + pos, strings[i]->chars, strings[i]->length);
+        pos += strings[i]->length;
+
+        if (i < list->count - 1) {
+            memcpy(chars + pos, delimiter->chars, delimiter->length);
+            pos += delimiter->length;
+        }
+
+        popTempRoot(); // Pop string
+    }
+    chars[totalLength] = '\0';
+
+    popTempRoot(); // Pop list
+    FREE_ARRAY(ObjString*, strings, list->count);
+
+    ObjString* result = takeString(chars, totalLength);
+    return OBJ_VAL(result);
+}
+
+// List native functions
+static Value listSliceNative(int argCount, Value* args) {
+    if (!IS_LIST(args[0])) {
+        runtimeError("First argument must be a list.");
+        return ERROR_VAL();
+    }
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        runtimeError("Indices must be numbers.");
+        return ERROR_VAL();
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    int start = (int)AS_NUMBER(args[1]);
+    int end = (int)AS_NUMBER(args[2]);
+
+    // Handle negative indices
+    if (start < 0) start = list->count + start;
+    if (end < 0) end = list->count + end;
+
+    // Clamp to valid range
+    if (start < 0) start = 0;
+    if (end > list->count) end = list->count;
+    if (start > end) start = end;
+
+    // Create result list
+    ObjList* result = newList();
+    pushTempRoot(OBJ_VAL(result));
+
+    for (int i = start; i < end; i++) {
+        appendToList(result, list->items[i]);
+    }
+
+    popTempRoot();
+    return OBJ_VAL(result);
+}
+
 static void defineNative(const char* name, NativeFn function, int arity) {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function, arity)));
@@ -750,12 +931,13 @@ void initVM() {
     vm.initString = copyString("init", 4);
 
 
-    defineNative("clock", clockNative, 0);
-    defineNative("input", inputNative, 0);
-    defineNative("readFile", readFileNative, 1);
-    defineNative("number", numberNative, 1);
+    // I/O functions (internal - use via stdlib/io module)
+    defineNative("__clock", clockNative, 0);
+    defineNative("__input", inputNative, 0);
+    defineNative("__readFile", readFileNative, 1);
+    defineNative("__number", numberNative, 1);
 
-    // Test mode control functions
+    // Test mode control functions (internal - used by stdlib/test)
     defineNative("__enterTestMode", enterTestModeNative, 0);
     defineNative("__exitTestMode", exitTestModeNative, 0);
     defineNative("__setCurrentTest", setCurrentTestNative, 1);
@@ -763,9 +945,24 @@ void initVM() {
     defineNative("__getLastFailure", getLastFailureNative, 0);
     defineNative("__clearLastFailure", clearLastFailureNative, 0);
 
-    // Assertion functions
-    defineNative("assert", assertNative, -1);
-    defineNative("assertEqual", assertEqualNative, 2);
+    // Assertion functions (internal - use via stdlib/test module)
+    defineNative("__assert", assertNative, -1);
+    defineNative("__assertEqual", assertEqualNative, 2);
+
+    // Math functions (internal - use via stdlib/math module)
+    defineNative("__abs", absNative, 1);
+    defineNative("__max", maxNative, 2);
+    defineNative("__min", minNative, 2);
+    defineNative("__pow", powNative, 2);
+    defineNative("__sqrt", sqrtNative, 1);
+
+    // String functions (internal - use via stdlib/string module)
+    defineNative("__startsWith", startsWithNative, 2);
+    defineNative("__endsWith", endsWithNative, 2);
+    defineNative("__join", joinNative, 2);
+
+    // List functions (internal - use via stdlib/list module)
+    defineNative("__slice", listSliceNative, 3);
 
     vm.stringClass = newClass(copyString("String", 6));
     definePrimitive(vm.stringClass, "length", lengthNative, 1);

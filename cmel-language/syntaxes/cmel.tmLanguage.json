@@ -98,7 +98,7 @@
                 },
                 {
                     "name": "support.function.builtin.cmel",
-                    "match": "\\b(print|clock|input|readFile|number)\\b"
+                    "match": "\\b(print)\\b"
                 },
                 {
                     "name": "storage.type.class.cmel",

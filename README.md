@@ -16,7 +16,7 @@ Here are the features which separate `Cmel` from `Lox`.
 - Lists
 - Maps (hash tables with string keys)
 - Modulo operator
-- String escape sequences (`\n`, `\t`, `\r`, `\"`, `\\`)
+- String escape sequences (`\n`, `\t`, `\r`, `\"`, `\\`, `\e`)
 - Automatic type-to-string conversion with the `+` operator
 - Module system with `import` statement and standard library
 
@@ -45,30 +45,30 @@ Here are the features which separate `Cmel` from `Lox`.
     - Set via subscript: `map["key"] = value`
     - Literal syntax: `{"key1": value1, "key2": value2}`
 
-### Built-in Functions
-
-- `input()` gets and returns a value from stdin
-- `clock()` returns the current time since the program started in seconds
-- `readFile(path)` returns the content of the given path as a String
-- `number(val)` returns a number representation of the given value. Only numbers, booleans and strings may be passed
-
 ### Module System
 
-Import `.cmel` files using the `import` statement:
+Import functions from `.cmel` modules using the `import` statement:
 
 ```cmel
-import "stdlib/math";
-
+import PI, sqrt, abs from "stdlib/math";
 print PI;        // 3.14159
 print sqrt(16);  // 4
+print abs(-5);   // 5
+
+// Wildcard import
+import "stdlib/io";
+var time = clock();
 ```
 
-Modules are executed once and cached. All variables and functions defined in the module become globally available.
+**All native functions require imports.** Modules are executed once and cached.
 
 **Standard Library:**
-- `stdlib/math.cmel` - Mathematical constants and functions (PI, E, abs, max, min, pow, sqrt)
-- `stdlib/string.cmel` - String utilities (join, reverse, startsWith, endsWith)
-- `stdlib/list.cmel` - List algorithms (sum, filter, map, find, contains, reverse, sort)
+- `stdlib/convert.cmel` - Type conversion utilities: `number()`
+- `stdlib/io.cmel` - I/O functions: `clock()`, `input()`, `readFile()`
+- `stdlib/math.cmel` - Native math functions: `abs()`, `max()`, `min()`, `pow()`, `sqrt()`, and constants `PI`, `E`
+- `stdlib/string.cmel` - String functions: `startsWith()`, `endsWith()`, `join()`, `reverse()`
+- `stdlib/list.cmel` - List functions: `slice()`, `sort()`, `sortWith()`, `createListWithDefaults()`
+- `stdlib/test.cmel` - Testing framework: `suite()`, `test()`, `assert()`, `assertEqual()`, `run()`
 
 ## Installation
 
@@ -126,7 +126,7 @@ To test the code, first build the executable using the build script, then run
 node cmel.test.mjs
 ```
 
-Tests use inline expectations with `// expect:` comments. The test suite includes 78 tests covering all language features including the module system.
+Tests use inline expectations with `// expect:` comments.
 
 ## Todo
 
@@ -142,9 +142,10 @@ Tests use inline expectations with `// expect:` comments. The test suite include
 - [ ] String interpolation
 - [x] Implicit convert to string on all types for concatenation
 - [ ] Try/Catch
-- [ ] Anonymous Functions
-- [ ] Modules
+- [x] Anonymous Functions
+- [x] Modules
 - [x] User facing Hash Tables (string keys only)
+- [x] Hash Tables
 - [ ] Hash Tables with non-string keys
 - [ ] Continue Statement
 - [x] Break Statement
@@ -155,7 +156,7 @@ Tests use inline expectations with `// expect:` comments. The test suite include
 ### Tooling
 
 - [x] Syntax Highlighter
-- [ ] Language Server
+- [x] Language Server
 - [x] Test Runner
 
 ### Misc

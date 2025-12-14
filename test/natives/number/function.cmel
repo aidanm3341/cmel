@@ -1,3 +1,4 @@
+import number from "stdlib/convert";
 fun test() {}
 print number(test);
-// expect error: Given type cannot be converted to a number.\n[line 2] in script
+// expect error: Given type cannot be converted to a number.\n[line 3] in script

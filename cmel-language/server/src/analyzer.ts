@@ -4,6 +4,40 @@ import * as AST from './ast';
 import { Token, TokenType } from './scanner';
 import { ModuleResolver, ExportInfo } from './module-resolver';
 
+// Mapping of function names to their stdlib module paths
+export const STDLIB_FUNCTION_MAP: Record<string, string> = {
+  // Conversion functions
+  'number': 'stdlib/convert',
+  // I/O functions
+  'clock': 'stdlib/io',
+  'input': 'stdlib/io',
+  'readFile': 'stdlib/io',
+  // Math functions
+  'abs': 'stdlib/math',
+  'max': 'stdlib/math',
+  'min': 'stdlib/math',
+  'pow': 'stdlib/math',
+  'sqrt': 'stdlib/math',
+  'PI': 'stdlib/math',
+  'E': 'stdlib/math',
+  // String functions
+  'startsWith': 'stdlib/string',
+  'endsWith': 'stdlib/string',
+  'join': 'stdlib/string',
+  'reverse': 'stdlib/string',
+  // List functions
+  'slice': 'stdlib/list',
+  'sort': 'stdlib/list',
+  'sortWith': 'stdlib/list',
+  'createListWithDefaults': 'stdlib/list',
+  // Test functions
+  'suite': 'stdlib/test',
+  'test': 'stdlib/test',
+  'run': 'stdlib/test',
+  'assert': 'stdlib/test',
+  'assertEqual': 'stdlib/test'
+};
+
 export interface Symbol {
   name: string;
   kind: 'variable' | 'function' | 'class' | 'parameter' | 'method' | 'field';
@@ -68,6 +102,7 @@ export class Analyzer {
   private inClass = 0;
   private moduleResolver: ModuleResolver;
   private currentDocumentUri: string = '';
+  private importedModules: Set<string> = new Set();
 
   constructor(workspaceRoot: string) {
     this.globalScope = new Scope();
@@ -77,14 +112,22 @@ export class Analyzer {
   }
 
   private defineBuiltins(): void {
-    // Built-in functions
+    // Internal native functions (prefixed with __)
+    // These are not directly accessible - they're wrapped by stdlib modules
     const builtins = [
-      'clock', 'input', 'readFile', 'number',
-      // Test framework control functions
+      // I/O functions (wrapped by stdlib/io)
+      '__clock', '__input', '__readFile', '__number',
+      // Math functions (wrapped by stdlib/math)
+      '__abs', '__max', '__min', '__pow', '__sqrt',
+      // String functions (wrapped by stdlib/string)
+      '__startsWith', '__endsWith', '__join',
+      // List functions (wrapped by stdlib/list)
+      '__slice',
+      // Test framework control functions (used internally by stdlib/test)
       '__enterTestMode', '__exitTestMode', '__setCurrentTest',
       '__testFailed', '__getLastFailure', '__clearLastFailure',
-      // Assertion functions
-      'assert', 'assertEqual'
+      // Assertion functions (wrapped by stdlib/test)
+      '__assert', '__assertEqual'
     ];
     for (const name of builtins) {
       const symbol: Symbol = {
@@ -121,6 +164,7 @@ export class Analyzer {
 
   analyze(program: AST.Program, documentUri: string = ''): void {
     this.diagnostics = [];
+    this.importedModules.clear();
     this.currentDocumentUri = documentUri;
     this.visitProgram(program);
   }
@@ -135,6 +179,10 @@ export class Analyzer {
 
   getDiagnostics(): Diagnostic[] {
     return this.diagnostics;
+  }
+
+  hasImport(modulePath: string): boolean {
+    return this.importedModules.has(modulePath);
   }
 
   getSymbolAt(offset: number): Symbol | null {
@@ -399,6 +447,9 @@ export class Analyzer {
 
   private visitImportStatement(stmt: AST.ImportStatement): void {
     const importPath = stmt.path.lexeme.slice(1, -1); // Remove quotes
+
+    // Track imported module
+    this.importedModules.add(importPath);
 
     // Resolve module
     const moduleExports = this.moduleResolver.resolveImport(

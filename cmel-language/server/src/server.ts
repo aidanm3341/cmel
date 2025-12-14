@@ -28,14 +28,17 @@ import {
   TextEdit,
   Range,
   Position,
-  DiagnosticSeverity
+  DiagnosticSeverity,
+  CodeAction,
+  CodeActionParams,
+  CodeActionKind
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { Scanner, TokenType } from './scanner';
 import { Parser } from './parser';
-import { Analyzer, Symbol } from './analyzer';
+import { Analyzer, Symbol, STDLIB_FUNCTION_MAP } from './analyzer';
 import * as AST from './ast';
 
 const connection = createConnection(ProposedFeatures.all);
@@ -85,7 +88,10 @@ connection.onInitialize((params: InitializeParams) => {
       signatureHelpProvider: {
         triggerCharacters: ['(', ',']
       },
-      renameProvider: true
+      renameProvider: true,
+      codeActionProvider: {
+        codeActionKinds: [CodeActionKind.QuickFix]
+      }
     }
   };
 
@@ -321,6 +327,116 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit | null => {
     }
   };
 });
+
+// Code Actions (auto-import suggestions)
+connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return [];
+
+  const analysis = documentAnalysis.get(params.textDocument.uri);
+  if (!analysis) return [];
+
+  const codeActions: CodeAction[] = [];
+
+  // Check diagnostics for undefined identifiers
+  for (const diagnostic of params.context.diagnostics) {
+    if (diagnostic.message.includes('Undefined variable')) {
+      // Extract the variable name from the error message
+      const match = diagnostic.message.match(/Undefined variable '([^']+)'/);
+      if (!match) continue;
+
+      const undefinedName = match[1];
+
+      // Check if this is a known stdlib function
+      const modulePath = STDLIB_FUNCTION_MAP[undefinedName];
+      if (!modulePath) continue;
+
+      // Check if this module is already imported
+      const alreadyImported = analysis.analyzer.hasImport(modulePath);
+
+      // Get the text at the diagnostic location
+      const text = document.getText(diagnostic.range);
+
+      // Create a code action to add the import
+      const importStatement = alreadyImported
+        ? `Add '${undefinedName}' to existing import from "${modulePath}"`
+        : `Import '${undefinedName}' from "${modulePath}"`;
+
+      const action: CodeAction = {
+        title: importStatement,
+        kind: CodeActionKind.QuickFix,
+        diagnostics: [diagnostic],
+        edit: {
+          changes: {
+            [params.textDocument.uri]: [createImportEdit(document, analysis, undefinedName, modulePath, alreadyImported)]
+          }
+        }
+      };
+
+      codeActions.push(action);
+    }
+  }
+
+  return codeActions;
+});
+
+// Helper function to create import edit
+function createImportEdit(
+  document: TextDocument,
+  analysis: { ast: AST.Program; analyzer: Analyzer },
+  symbolName: string,
+  modulePath: string,
+  alreadyImported: boolean
+): TextEdit {
+  const text = document.getText();
+
+  if (alreadyImported) {
+    // Find the existing import statement and add to it
+    const importNode = analysis.ast.body.find(
+      node => node.kind === 'ImportStatement' &&
+      (node as AST.ImportStatement).path.lexeme.slice(1, -1) === modulePath
+    ) as AST.ImportStatement | undefined;
+
+    if (importNode && importNode.imports && importNode.imports.length > 0) {
+      // Add to the existing import list
+      const lastImport = importNode.imports[importNode.imports.length - 1];
+      const insertPos = document.positionAt(lastImport.end);
+
+      return {
+        range: { start: insertPos, end: insertPos },
+        newText: `, ${symbolName}`
+      };
+    }
+  }
+
+  // Insert new import at the top of the file
+  // Find the position after any existing imports, or at the very beginning
+  let insertLine = 0;
+  let lastImportLine = -1;
+
+  // Find the last import statement in the top-level body
+  for (const node of analysis.ast.body) {
+    if (node.kind === 'ImportStatement') {
+      lastImportLine = node.line;
+    }
+  }
+
+  if (lastImportLine >= 0) {
+    // Insert after the last import (convert 1-indexed AST line to 0-indexed editor line)
+    insertLine = lastImportLine;
+  } else {
+    // No imports exist, insert at the very beginning (line 0)
+    insertLine = 0;
+  }
+
+  const insertPos = Position.create(insertLine, 0);
+  const newImport = `import ${symbolName} from "${modulePath}";\n`;
+
+  return {
+    range: { start: insertPos, end: insertPos },
+    newText: newImport
+  };
+}
 
 // Hover
 connection.onHover((params: HoverParams): Hover | null => {

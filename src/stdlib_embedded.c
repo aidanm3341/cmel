@@ -4,7 +4,24 @@
 
 #include "stdlib_embedded.h"
 
+static const char STDLIB_CONVERT_SOURCE[] = 
+"// Convert module - exports type conversion utilities\n"
+"export var number = __number;\n"
+;
+
+static const char STDLIB_IO_SOURCE[] = 
+"// I/O module - exports native I/O functions\n"
+"export var clock = __clock;\n"
+"export var input = __input;\n"
+"export var readFile = __readFile;\n"
+;
+
 static const char STDLIB_LIST_SOURCE[] = 
+"// List module - exports native list functions\n"
+"import number from \"stdlib/convert\";\n"
+"\n"
+"export var slice = __slice;\n"
+"\n"
 "export fun createListWithDefaults(defaultElement, size) {\n"
 "    var newList = [];\n"
 "    for (var i = 0; i < size; i = i+1) {\n"
@@ -140,76 +157,26 @@ static const char STDLIB_LIST_SOURCE[] =
 "export fun sortWith(nums, comparator) {\n"
 "    return mergeSortWithComparator(nums, 0, nums.length() - 1, comparator);\n"
 "}\n"
-"\n"
-"export fun slice(list, start, end) {\n"
-"    var newList = [];\n"
-"    for (var i=start; i<end; i=i+1) {\n"
-"        newList.add(list[i]);\n"
-"    }\n"
-"    return newList;\n"
-"}\n"
 ;
 
 static const char STDLIB_MATH_SOURCE[] = 
-"// Math utilities\n"
-"\n"
+"// Math module - exports native math functions\n"
 "export var PI = 3.14159265359;\n"
 "export var E = 2.71828182846;\n"
-"\n"
-"export fun abs(x) {\n"
-"    if (x < 0) return -x;\n"
-"    return x;\n"
-"}\n"
-"\n"
-"export fun max(a, b) {\n"
-"    if (a > b) return a;\n"
-"    return b;\n"
-"}\n"
-"\n"
-"export fun min(a, b) {\n"
-"    if (a < b) return a;\n"
-"    return b;\n"
-"}\n"
-"\n"
-"export fun pow(base, exp) {\n"
-"    var result = 1;\n"
-"    for (var i = 0; i < exp; i = i + 1) {\n"
-"        result = result * base;\n"
-"    }\n"
-"    return result;\n"
-"}\n"
-"\n"
-"export fun sqrt(x) {\n"
-"    if (x < 0) return nil;\n"
-"    if (x == 0) return 0;\n"
-"\n"
-"    var guess = x / 2;\n"
-"    var epsilon = 0.00001;\n"
-"\n"
-"    while (abs(guess * guess - x) > epsilon) {\n"
-"        guess = (guess + x / guess) / 2;\n"
-"    }\n"
-"\n"
-"    return guess;\n"
-"}\n"
+"export var abs = __abs;\n"
+"export var max = __max;\n"
+"export var min = __min;\n"
+"export var pow = __pow;\n"
+"export var sqrt = __sqrt;\n"
 ;
 
 static const char STDLIB_STRING_SOURCE[] = 
-"// String utilities\n"
+"// String module - exports native string functions\n"
+"export var startsWith = __startsWith;\n"
+"export var endsWith = __endsWith;\n"
+"export var join = __join;\n"
 "\n"
-"export fun join(list, delimiter) {\n"
-"    if (list.length() == 0) return \"\";\n"
-"\n"
-"    var result = \"\";\n"
-"    for (var i = 0; i < list.length(); i = i + 1) {\n"
-"        result = result + list[i];\n"
-"        if (i < list.length() - 1) {\n"
-"            result = result + delimiter;\n"
-"        }\n"
-"    }\n"
-"    return result;\n"
-"}\n"
-"\n"
+"// reverse is still pure CMEL implementation\n"
 "export fun reverse(str) {\n"
 "    var chars = str.split(\"\");\n"
 "    var result = \"\";\n"
@@ -217,30 +184,6 @@ static const char STDLIB_STRING_SOURCE[] =
 "        result = result + chars[i];\n"
 "    }\n"
 "    return result;\n"
-"}\n"
-"\n"
-"export fun startsWith(str, prefix) {\n"
-"    if (prefix.length() > str.length()) return false;\n"
-"\n"
-"    var strPrefix = \"\";\n"
-"    var chars = str.split(\"\");\n"
-"    for (var i = 0; i < prefix.length(); i = i + 1) {\n"
-"        strPrefix = strPrefix + chars[i];\n"
-"    }\n"
-"\n"
-"    return strPrefix == prefix;\n"
-"}\n"
-"\n"
-"export fun endsWith(str, suffix) {\n"
-"    if (suffix.length() > str.length()) return false;\n"
-"\n"
-"    var strSuffix = \"\";\n"
-"    var chars = str.split(\"\");\n"
-"    for (var i = str.length() - suffix.length(); i < str.length(); i = i + 1) {\n"
-"        strSuffix = strSuffix + chars[i];\n"
-"    }\n"
-"\n"
-"    return strSuffix == suffix;\n"
 "}\n"
 ;
 
@@ -282,13 +225,19 @@ static const char STDLIB_TEST_SOURCE[] =
 "export fun run() {\n"
 "    __exitTestMode();\n"
 "}\n"
+"\n"
+"// Export assertion functions\n"
+"export var assert = __assert;\n"
+"export var assertEqual = __assertEqual;\n"
 ;
 
 const EmbeddedModule EMBEDDED_STDLIB[] = {
+    {"stdlib/convert", STDLIB_CONVERT_SOURCE, sizeof(STDLIB_CONVERT_SOURCE) - 1},
+    {"stdlib/io", STDLIB_IO_SOURCE, sizeof(STDLIB_IO_SOURCE) - 1},
     {"stdlib/list", STDLIB_LIST_SOURCE, sizeof(STDLIB_LIST_SOURCE) - 1},
     {"stdlib/math", STDLIB_MATH_SOURCE, sizeof(STDLIB_MATH_SOURCE) - 1},
     {"stdlib/string", STDLIB_STRING_SOURCE, sizeof(STDLIB_STRING_SOURCE) - 1},
     {"stdlib/test", STDLIB_TEST_SOURCE, sizeof(STDLIB_TEST_SOURCE) - 1},
 };
 
-const int EMBEDDED_STDLIB_COUNT = 4;
+const int EMBEDDED_STDLIB_COUNT = 6;

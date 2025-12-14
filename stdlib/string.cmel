@@ -1,18 +1,9 @@
-// String utilities
+// String module - exports native string functions
+export var startsWith = __startsWith;
+export var endsWith = __endsWith;
+export var join = __join;
 
-export fun join(list, delimiter) {
-    if (list.length() == 0) return "";
-
-    var result = "";
-    for (var i = 0; i < list.length(); i = i + 1) {
-        result = result + list[i];
-        if (i < list.length() - 1) {
-            result = result + delimiter;
-        }
-    }
-    return result;
-}
-
+// reverse is still pure CMEL implementation
 export fun reverse(str) {
     var chars = str.split("");
     var result = "";
@@ -20,28 +11,4 @@ export fun reverse(str) {
         result = result + chars[i];
     }
     return result;
-}
-
-export fun startsWith(str, prefix) {
-    if (prefix.length() > str.length()) return false;
-
-    var strPrefix = "";
-    var chars = str.split("");
-    for (var i = 0; i < prefix.length(); i = i + 1) {
-        strPrefix = strPrefix + chars[i];
-    }
-
-    return strPrefix == prefix;
-}
-
-export fun endsWith(str, suffix) {
-    if (suffix.length() > str.length()) return false;
-
-    var strSuffix = "";
-    var chars = str.split("");
-    for (var i = str.length() - suffix.length(); i < str.length(); i = i + 1) {
-        strSuffix = strSuffix + chars[i];
-    }
-
-    return strSuffix == suffix;
 }
